@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="삶을 이해하고 새로운 방향을 발견하는 코칭 도구 나눔터">
+  <title>코칭툴 나눔터</title>
+  <link rel="stylesheet" href="assets/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="코칭툴 나눔터 홈">
+      <span class="brand-mark">CT</span>
+      <span><strong>코칭툴 나눔터</strong><small>질문이 길을 열고, 기록이 변화를 만듭니다</small></span>
+    </a>
+    <nav id="toolFilters" class="filters" aria-label="코칭 도구 분류">
+      <button class="filter active" type="button" data-filter="all">전체</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">COACHING TOOL GALLERY</p>
+        <h1 id="page-title">나를 들여다보는<br><em>성장의 창</em></h1>
+      </div>
+      <p>설치 없이 바로 실행하고, 필요하면 HTML 파일을 내려받아 나만의 코칭 현장에서 활용해 보세요.</p>
+    </section>
+
+    <section id="toolGallery" class="gallery" aria-label="코칭 도구 목록" aria-live="polite">
+      <div class="gallery-message">코칭 도구를 불러오고 있습니다.</div>
+    </section>
+  </main>
+
+  <footer><strong>코칭툴 나눔터</strong><span>좋은 질문은 삶의 방향을 조금씩 바꿉니다.</span></footer>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <!-- file:// 더블클릭 실행에서는 브라우저가 tools.json 요청을 차단하므로 기본 등록부를 사용합니다. -->
+  <script id="fallbackRegistry" type="application/json">
+  {
+    "schemaVersion": 1,
+    "categories": [
+      { "id": "self", "name": "자기이해" },
+      { "id": "life", "name": "삶의 방향" },
+      { "id": "action", "name": "실행 설계" }
+    ],
+    "tools": [
+      { "id": "life-curve", "order": 1, "title": "생애곡선", "description": "삶의 Peak와 Valley를 돌아보며 중요한 전환점과 의미를 발견합니다.", "category": "life", "badge": "성찰", "badgeColor": "purple", "html": "tools/life-curve.html", "image": "assets/images/life-curve.png", "downloadName": "생애곡선.html", "tags": ["회고", "전환점", "자기이해"], "enabled": true },
+      { "id": "mind-card", "order": 2, "title": "마음카드", "description": "지금 마음에 머무는 감정을 고르고, 그 감정이 전하는 메시지를 살펴봅니다.", "category": "self", "badge": "감정", "badgeColor": "blue", "html": "tools/mind-card.html", "image": "assets/images/mind-card.png", "downloadName": "마음카드.html", "tags": ["감정인식", "대화", "마음돌봄"], "enabled": true },
+      { "id": "life-clock", "order": 3, "title": "인생시계", "description": "현재의 나이를 하루의 시간으로 바라보며 남은 여정과 우선순위를 생각합니다.", "category": "life", "badge": "관점", "badgeColor": "green", "html": "tools/life-clock.html", "image": "assets/images/life-clock.png", "downloadName": "인생시계.html", "tags": ["시간관점", "우선순위", "미래설계"], "enabled": true },
+      { "id": "life-wheel", "order": 4, "title": "인생 수레바퀴", "description": "삶의 주요 영역을 점검하고 균형이 필요한 곳을 한눈에 발견합니다.", "category": "self", "badge": "진단", "badgeColor": "orange", "html": "tools/life-wheel.html", "image": "assets/images/life-wheel.png", "downloadName": "인생수레바퀴.html", "tags": ["삶의균형", "자가진단", "목표설정"], "enabled": true },
+      { "id": "dhb-model", "order": 5, "title": "D-H-B 모델", "description": "꿈과 현재의 간극을 연결해 오늘부터 시작할 구체적인 행동을 설계합니다.", "category": "action", "badge": "실행", "badgeColor": "red", "html": "tools/dhb-model.html", "image": "assets/images/dhb-model.png", "downloadName": "D-H-B_모델.html", "tags": ["Dream", "Have", "Be"], "enabled": true },
+      { "id": "value-matrix", "order": 6, "title": "가치매트릭스", "description": "중요한 가치와 실제 행동을 비교해 더 나다운 선택의 기준을 세웁니다.", "category": "action", "badge": "가치", "badgeColor": "yellow", "html": "tools/value-matrix.html", "image": "assets/images/value-matrix.png", "downloadName": "가치매트릭스.html", "tags": ["가치탐색", "의사결정", "행동정렬"], "enabled": true }
+    ]
+  }
+  </script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 브라우저 탭 이름 수정: 생애곡선(Peak & Valley) 가치 탐색 v1.1 -> 생애곡선(Peak & Valley) -->
+    <title>생애곡선(Peak &amp; Valley)</title>
+    <!-- 외부 라이브러리 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #FDFDFD;
+            color: #333;
+        }
+
+        .journal-card {
+            background: white;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 0.5rem;
+        }
+
+        .input-focus:focus {
+            ring: 2px;
+            ring-color: #60A5FA;
+            outline: none;
+            border-color: #60A5FA;
+        }
+
+        /* 로딩 애니메이션 */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 640px) {
+            #chartContainer {
+                height: 350px;
+            }
+        }
+
+        .modal-overlay {
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto flex-1 w-full" id="printableArea">
+        <!-- 헤더 -->
+        <header class="mb-8 text-center relative">
+            <div class="absolute right-0 top-0 no-print flex gap-2">
+                <button onclick="openManual()" class="flex items-center gap-1 text-gray-500 hover:text-blue-600 text-xs font-medium transition">
+                    <i data-lucide="info" size="16"></i> 도움말
+                </button>
+            </div>
+            <h1 class="text-3xl font-bold mb-2 flex justify-center items-center gap-2">
+                <i data-lucide="trending-up" class="text-blue-500"></i>
+                생애곡선 (Peak &amp; Valley)
+            </h1>
+            <p class="text-gray-500">인생의 Peak와 Valley를 통해 당신의 가치를 발견하는 여정</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-4" id="mainGrid">
+            
+            <!-- 왼쪽: 설정 및 입력 영역 (no-print) -->
+            <div class="lg:col-span-4 space-y-6 no-print" id="inputColumn">
+                <!-- 기초 설정 -->
+                <div class="journal-card p-6">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="settings" size="20"></i> 기본 설정
+                    </h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">현재 나이</label>
+                                <input type="number" id="userAge" value="60" min="0" max="120" 
+                                    class="w-full p-2 border rounded input-focus"
+                                    onchange="handleAgeChange()">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">입력 간격</label>
+                                <select id="intervalType" class="w-full p-2 border rounded outline-none" onchange="generateInputFields()">
+                                    <option value="1">1년 단위</option>
+                                    <option value="5" selected>5년 단위</option>
+                                    <option value="10">10년 단위</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">그래프 세로 범위 (Y-Scale)</label>
+                            <div class="flex gap-2 mt-1">
+                                <button onclick="setYScale(5)" id="scale5" class="flex-1 py-1 text-xs border rounded bg-blue-50 text-blue-600 font-bold border-blue-200 shadow-inner">± 5 (기본)</button>
+                                <button onclick="setYScale(10)" id="scale10" class="flex-1 py-1 text-xs border rounded bg-white text-gray-500 border-gray-200">± 10 (확대)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 특수 지점 설정 -->
+                <div class="journal-card p-6 border-t-4 border-t-yellow-400">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="star" size="20" class="text-yellow-500"></i> 특수 지점 직접 입력
+                    </h2>
+                    <div class="space-y-6">
+                        <div class="space-y-3">
+                            <span class="text-sm font-bold text-blue-600 flex items-center gap-1">
+                                <i data-lucide="arrow-up-circle" size="16"></i> PEAK (최고의 순간)
+                            </span>
+                            <div class="grid grid-cols-2 gap-4" id="peakInputs"></div>
+                        </div>
+                        <div class="space-y-3 pt-2 border-t">
+                            <span class="text-sm font-bold text-red-600 flex items-center gap-1">
+                                <i data-lucide="arrow-down-circle" size="16"></i> VALLEY (힘들었던 순간)
+                            </span>
+                            <div class="grid grid-cols-2 gap-4" id="valleyInputs"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 구간 데이터 테이블 -->
+                <div class="journal-card p-6">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="list" size="20"></i> 일반 구간 데이터
+                    </h2>
+                    <div class="max-h-[300px] overflow-y-auto pr-2 space-y-1" id="intervalTable"></div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 그래프 및 분석 결과 (출력 시 가로 100% 확장) -->
+            <div class="lg:col-span-8 space-y-6" id="outputColumn">
+                <!-- 그래프 영역 -->
+                <div class="journal-card p-4 md:p-6" id="chartSection">
+                    <div class="flex flex-wrap justify-between items-center gap-4 mb-6 px-1">
+                        <h2 class="text-lg font-semibold flex items-center gap-2">
+                            <i data-lucide="bar-chart-3" size="20"></i> 시각화 그래프
+                        </h2>
+                        <div class="flex items-center gap-4 no-print">
+                            <div class="flex gap-2 text-xs font-medium">
+                                <button onclick="downloadPNG()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded flex items-center gap-2 transition shadow-sm font-bold">
+                                    <i data-lucide="image" size="14"></i> 이미지 저장
+                                </button>
+                                <button onclick="downloadPDF()" id="pdfBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded flex items-center gap-2 transition shadow-sm font-bold">
+                                    <i data-lucide="file-text" size="14"></i> PDF 리포트
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chartContainer" class="relative w-full h-[450px]">
+                        <canvas id="lifeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 분석 기록 섹션 -->
+                <div class="space-y-4" id="analysisSection">
+                    <div id="analysisCards" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 출력 전용 푸터 -->
+        <div id="pdfFooter" class="hidden text-gray-400 text-xs py-12 w-full border-t border-dashed mt-8">
+            <div class="flex justify-between items-center w-full">
+                <p>All rights reserved by CiT</p>
+                <p>Built by MK 컨설팅 &amp; 코칭</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 웹앱 푸터 -->
+    <footer class="mt-auto py-8 border-t text-gray-400 text-xs sm:text-sm no-print">
+        <div class="max-w-6xl mx-auto w-full flex justify-between items-center gap-4 px-4 md:px-8">
+            <p>All rights reserved by CiT</p>
+            <p>Built by MK 컨설팅 &amp; 코칭</p>
+        </div>
+    </footer>
+
+    <!-- 매뉴얼 모달 -->
+    <div id="manualModal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="book-open" class="text-blue-500"></i> 생애곡선 웹앱 사용 매뉴얼
+                </h3>
+                <button onclick="closeManual()" class="text-gray-400 hover:text-gray-600 p-1">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                    <p class="text-blue-700 text-xs font-bold uppercase mb-1">앱 개요</p>
+                    <p class="text-blue-600 text-sm leading-relaxed">
+                        생애곡선(Peak &amp; Valley)은 삶의 주요 시기를 만족도 곡선으로 시각화하고,
+                        최고점과 저점에 담긴 경험의 의미와 가치를 정리하도록 돕는 성찰 도구입니다.
+                        연령별 흐름을 한눈에 확인하며 중요한 전환점, 반복되는 패턴, 앞으로 지키고 싶은
+                        가치 키워드를 발견할 수 있습니다.
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <section class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0 text-sm">1</div>
+                        <div class="text-gray-600 text-sm leading-relaxed">
+                            <p class="font-bold text-gray-700 mb-1">기본 설정</p>
+                            <p>현재 나이를 입력하면 그래프와 일반 구간 데이터의 표시 범위가 자동으로 맞춰집니다. 입력 간격은 1년, 5년, 10년 단위 중 선택할 수 있으며, 세밀하게 돌아보고 싶을수록 짧은 간격을 사용하면 좋습니다. 그래프 세로 범위는 기본 ±5 또는 확대 ±10으로 조정해 감정의 높낮이를 더 넓게 표현할 수 있습니다.</p>
+                        </div>
+                    </section>
+                    <section class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0 text-sm">2</div>
+                        <div class="text-gray-600 text-sm leading-relaxed">
+                            <p class="font-bold text-gray-700 mb-1">특수 지점 직접 입력</p>
+                            <p>PEAK에는 삶에서 가장 충만했거나 성취감이 컸던 순간을, VALLEY에는 힘들었지만 중요한 배움이 남은 순간을 입력합니다. 각 지점은 나이와 점수를 직접 넣어 일반 구간보다 정확한 위치에 표시할 수 있습니다. 입력 후 생성되는 기록 카드에 그 시기의 의미와 가치 키워드를 적으면 그래프 위에도 요약 라벨로 표시됩니다.</p>
+                        </div>
+                    </section>
+                    <section class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0 text-sm">3</div>
+                        <div class="text-gray-600 text-sm leading-relaxed">
+                            <p class="font-bold text-gray-700 mb-1">일반 구간 데이터 입력</p>
+                            <p>일반 구간 데이터의 슬라이더를 움직여 각 연령대의 전반적인 만족도와 에너지 수준을 기록합니다. 0은 기준선, 양수는 긍정적 흐름, 음수는 어려움이나 침체를 의미합니다. 특수 지점과 일반 구간 데이터를 함께 보면 삶의 큰 흐름과 결정적 사건을 동시에 해석할 수 있습니다.</p>
+                        </div>
+                    </section>
+                    <section class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0 text-sm">4</div>
+                        <div class="text-gray-600 text-sm leading-relaxed">
+                            <p class="font-bold text-gray-700 mb-1">리포트 다운로드</p>
+                            <p>그래프 오른쪽 위의 이미지 저장 버튼은 현재 결과를 PNG 이미지로 저장하고, PDF 리포트 버튼은 그래프와 기록 카드를 A4 리포트 형태로 저장합니다. 다운로드 전 입력한 의미와 가치 내용이 출력용 텍스트로 반영되므로, 상담 기록이나 개인 성찰 자료로 바로 활용할 수 있습니다.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <div class="p-6 border-t">
+                <button onclick="closeManual()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition w-full shadow-lg">확인했습니다</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let myChart = null;
+        let yScaleLimit = 5; 
+        let specialPoints = {
+            peaks: [{ age: null, score: null, id: 'p0' }, { age: null, score: null, id: 'p1' }],
+            valleys: [{ age: null, score: null, id: 'v0' }, { age: null, score: null, id: 'v1' }]
+        };
+        let intervalData = {};
+        const keywordData = {}; // 그래프 표시용 {meaning, value} 저장소
+
+        window.onload = () => {
+            lucide.createIcons();
+            handleAgeChange();
+        };
+
+        function openManual() { document.getElementById('manualModal').classList.remove('hidden'); }
+        function closeManual() { document.getElementById('manualModal').classList.add('hidden'); }
+
+        function setYScale(limit) {
+            yScaleLimit = limit;
+            const btn5 = document.getElementById('scale5');
+            const btn10 = document.getElementById('scale10');
+            
+            if(limit === 5) {
+                btn5.className = "flex-1 py-1 text-xs border rounded bg-blue-50 text-blue-600 font-bold border-blue-200 shadow-inner";
+                btn10.className = "flex-1 py-1 text-xs border rounded bg-white text-gray-500 border-gray-200 hover:bg-gray-50";
+            } else {
+                btn10.className = "flex-1 py-1 text-xs border rounded bg-blue-50 text-blue-600 font-bold border-blue-200 shadow-inner";
+                btn5.className = "flex-1 py-1 text-xs border rounded bg-white text-gray-500 border-gray-200 hover:bg-gray-50";
+            }
+            clampSpecialScores();
+            generateSpecialInputs();
+            generateInputFields();
+        }
+
+        function handleAgeChange() {
+            generateInputFields();
+            generateSpecialInputs();
+        }
+
+        function generateSpecialInputs() {
+            const containers = {
+                peak: document.getElementById('peakInputs'),
+                valley: document.getElementById('valleyInputs')
+            };
+            
+            ['peak', 'valley'].forEach(type => {
+                containers[type].innerHTML = '';
+                for (let i = 0; i < 2; i++) {
+                    const data = type === 'peak' ? specialPoints.peaks[i] : specialPoints.valleys[i];
+                    const borderColor = type === 'peak' ? 'focus:border-blue-400' : 'focus:border-red-400';
+                    
+                    containers[type].innerHTML += `
+                        <div class="p-3 bg-gray-50 rounded-lg space-y-2 border border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">나이</label>
+                                <input type="number" placeholder="세" value="${data.age ?? ''}" 
+                                    class="w-14 p-1 text-sm border rounded ${borderColor} outline-none text-right" 
+                                    oninput="updateSpecialPoint('${type}', ${i}, 'age', this.value)">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">점수</label>
+                                <input type="number" placeholder="±${yScaleLimit}" value="${data.score ?? ''}" min="-${yScaleLimit}" max="${yScaleLimit}" step="1"
+                                    class="w-14 p-1 text-sm border rounded ${borderColor} outline-none text-right font-bold" 
+                                    oninput="updateSpecialPoint('${type}', ${i}, 'score', this.value, this)">
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            updateApp();
+        }
+
+        function clampScore(score) {
+            return Math.max(-yScaleLimit, Math.min(yScaleLimit, score));
+        }
+
+        function clampSpecialScores() {
+            [...specialPoints.peaks, ...specialPoints.valleys].forEach(point => {
+                if (point.score !== null) point.score = clampScore(point.score);
+            });
+        }
+
+        function updateSpecialPoint(type, index, field, value, inputEl = null) {
+            let val = value === '' ? null : parseFloat(value);
+            if (Number.isNaN(val)) val = null;
+            if (field === 'score' && val !== null) {
+                val = clampScore(val);
+                if (inputEl && parseFloat(inputEl.value) !== val) inputEl.value = val;
+            }
+            if (type === 'peak') specialPoints.peaks[index][field] = val;
+            else specialPoints.valleys[index][field] = val;
+            updateApp();
+        }
+
+        function generateInputFields() {
+            const age = parseInt(document.getElementById('userAge').value) || 0;
+            const interval = parseInt(document.getElementById('intervalType').value);
+            const maxAge = Math.ceil(age / 10) * 10;
+            const container = document.getElementById('intervalTable');
+            container.innerHTML = '';
+
+            const newIntervalData = {};
+            for (let i = 0; i <= maxAge; i += interval) {
+                newIntervalData[i] = intervalData[i] !== undefined ? intervalData[i] : 0;
+                container.innerHTML += `
+                    <div class="flex items-center justify-between px-3 py-2 bg-white border rounded mb-1 hover:bg-gray-50 transition">
+                        <span class="text-xs font-bold text-gray-500 w-10">${i}세</span>
+                        <input type="range" min="-${yScaleLimit}" max="${yScaleLimit}" step="1" value="${newIntervalData[i]}" 
+                            class="flex-1 mx-4 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600" 
+                            oninput="updateIntervalValue(${i}, this.value)">
+                        <span class="text-sm w-6 text-center font-bold text-gray-700" id="val-${i}">${newIntervalData[i]}</span>
+                    </div>
+                `;
+            }
+            intervalData = newIntervalData;
+            updateApp();
+        }
+
+        function updateIntervalValue(age, val) {
+            intervalData[age] = parseInt(val);
+            document.getElementById(`val-${age}`).innerText = val;
+            updateApp();
+        }
+
+        function updateApp() {
+            renderChart();
+            renderAnalysisCards();
+        }
+
+        function getCombinedData() {
+            const combined = [];
+            Object.keys(intervalData).forEach(age => {
+                combined.push({ x: parseInt(age), y: intervalData[age], isSpecial: false });
+            });
+            specialPoints.peaks.forEach(p => {
+                if (p.age !== null && p.score !== null) combined.push({ x: p.age, y: p.score, isSpecial: true, type: 'peak', id: p.id });
+            });
+            specialPoints.valleys.forEach(v => {
+                if (v.age !== null && v.score !== null) combined.push({ x: v.age, y: v.score, isSpecial: true, type: 'valley', id: v.id });
+            });
+            combined.sort((a, b) => a.x - b.x);
+            return combined.filter((point, index, self) => 
+                index === self.findIndex((t) => (t.x === point.x && (t.isSpecial || !self.some(s => s.x === point.x && s.isSpecial))))
+            );
+        }
+
+        const labelPlugin = {
+            id: 'pointLabel',
+            afterDatasetsDraw(chart) {
+                const { ctx, scales: { x, y } } = chart;
+                ctx.save();
+                ctx.font = 'bold 12px Noto Sans KR';
+                ctx.textAlign = 'center';
+                
+                chart.data.datasets[0].data.forEach((point) => {
+                    if (point.isSpecial) {
+                        const m = keywordData[`meaning-${point.type}-${point.id}`] || "";
+                        const v = keywordData[`value-${point.type}-${point.id}`] || "";
+                        
+                        let label = m;
+                        if (v) label += ` (${v})`;
+                        
+                        if (label) {
+                            const posX = x.getPixelForValue(point.x);
+                            const posY = y.getPixelForValue(point.y);
+                            const isPeak = point.type === 'peak';
+                            
+                            const textWidth = ctx.measureText(label).width;
+                            const boxWidth = textWidth + 12;
+                            const boxHeight = 18;
+                            const boxX = Math.max(2, Math.min(posX - (boxWidth / 2), chart.width - boxWidth - 2));
+                            const boxY = Math.max(2, posY - 11 - 8 - boxHeight);
+                            const textX = boxX + (boxWidth / 2);
+                            const textY = boxY + 14;
+
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                            ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+                            
+                            ctx.fillStyle = isPeak ? '#1E40AF' : '#991B1B';
+                            ctx.fillText(label, textX, textY);
+                        }
+                    }
+                });
+                ctx.restore();
+            }
+        };
+
+        function renderChart() {
+            const ctx = document.getElementById('lifeChart').getContext('2d');
+            const dataPoints = getCombinedData();
+            const maxInputAge = dataPoints.length > 0 ? Math.max(...dataPoints.map(d => d.x)) : 0;
+            const userAge = parseInt(document.getElementById('userAge').value) || 0;
+            const xAxisMax = Math.max(userAge, maxInputAge, 1); 
+
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { datasets: [{
+                    data: dataPoints,
+                    borderColor: '#4B5563',
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.45,
+                    pointBackgroundColor: dataPoints.map(d => d.type === 'peak' ? '#3B82F6' : (d.type === 'valley' ? '#EF4444' : '#999')),
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2.5,
+                    pointRadius: dataPoints.map(d => d.isSpecial ? 11 : 4),
+                    pointHoverRadius: 13,
+                    clip: false
+                }]},
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    layout: { padding: { left: 10, right: 20, top: 60, bottom: 35 } },
+                    scales: {
+                        x: { 
+                            type: 'linear', min: 0, max: xAxisMax, bounds: 'data', 
+                            ticks: { stepSize: 10, includeBounds: true, padding: 12, font: { size: 11, weight: 'bold' } }, 
+                            grid: { color: '#F3F4F6' } 
+                        },
+                        y: { 
+                            min: -yScaleLimit, max: yScaleLimit, 
+                            grid: { color: (c) => c.tick.value === 0 ? '#374151' : '#E5E7EB', borderDash: (c) => c.tick.value === 0 ? [] : [4, 4] }, 
+                            ticks: { stepSize: 1, font: { size: 10 } } 
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                },
+                plugins: [labelPlugin]
+            });
+        }
+
+        function syncTextToPrint(id) {
+            const val = document.getElementById(id).value;
+            const cleanKey = val.length > 12 ? val.substring(0, 12) + ".." : val;
+            keywordData[id] = cleanKey;
+            renderChart();
+            const printDiv = document.getElementById('print-' + id);
+            if (printDiv) printDiv.innerText = val || '기록 없음';
+        }
+
+        function renderAnalysisCards() {
+            const container = document.getElementById('analysisCards');
+            const existingValues = {};
+            container.querySelectorAll('textarea').forEach(ta => existingValues[ta.id] = ta.value);
+            container.innerHTML = '';
+            
+            const specials = [
+                ...specialPoints.peaks.map((p) => ({ ...p, type: 'peak' })),
+                ...specialPoints.valleys.map((v) => ({ ...v, type: 'valley' }))
+            ].filter(s => s.age !== null && s.score !== null);
+
+            if (specials.length === 0) {
+                container.innerHTML = `<div class="journal-card p-12 text-center border-dashed no-print"><i data-lucide="info" class="mx-auto mb-3 text-gray-300" size="32"></i><p class="text-gray-400 text-sm">Peak와 Valley를 입력하면 기록 카드가 생성됩니다.</p></div>`;
+                lucide.createIcons(); return;
+            }
+
+            specials.sort((a,b) => a.age - b.age).forEach(s => {
+                const isPeak = s.type === 'peak';
+                const label = isPeak ? 'PEAK' : 'VALLEY';
+                const meaningId = `meaning-${s.type}-${s.id}`;
+                const valueId = `value-${s.type}-${s.id}`;
+
+                container.innerHTML += `
+                    <div class="journal-card p-6 border-l-8 ${isPeak ? 'border-l-blue-500' : 'border-l-red-500'}">
+                        <div class="flex items-center gap-3 mb-5">
+                            <span class="px-3 py-1 rounded-full text-[11px] font-extrabold ${isPeak ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}">${label}</span>
+                            <span class="font-bold text-gray-800 text-base">${s.age}세 시점</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest block">의미 <span class="text-[9px] lowercase font-normal">(가치 키워드 위주)</span></label>
+                                <textarea id="${meaningId}" oninput="syncTextToPrint('${meaningId}')" class="w-full p-4 border rounded-xl text-sm h-28 focus:ring-2 focus:ring-blue-100 outline-none transition resize-none no-print bg-gray-50" placeholder="의미를 기록하세요.">${existingValues[meaningId] || ''}</textarea>
+                                <div id="print-${meaningId}" class="hidden print-text text-sm whitespace-pre-wrap p-4 bg-gray-50 rounded-xl border border-gray-100 min-h-[70px] leading-relaxed">${existingValues[meaningId] || '기록 없음'}</div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest block">가치</label>
+                                <textarea id="${valueId}" oninput="syncTextToPrint('${valueId}')" class="w-full p-4 border rounded-xl text-sm h-28 focus:ring-2 focus:ring-blue-100 outline-none transition resize-none no-print bg-gray-50" placeholder="가치를 기록하세요.">${existingValues[valueId] || ''}</textarea>
+                                <div id="print-${valueId}" class="hidden print-text text-sm whitespace-pre-wrap p-4 bg-gray-50 rounded-xl border border-gray-100 min-h-[70px] leading-relaxed">${existingValues[valueId] || '기록 없음'}</div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        async function downloadPNG() {
+            document.querySelectorAll('textarea').forEach(ta => syncTextToPrint(ta.id));
+            const style = document.createElement('style');
+            style.id = 'export-style';
+            style.innerHTML = `
+                .no-print { display: none !important; } 
+                .print-text { display: block !important; } 
+                textarea { display: none !important; } 
+                #printableArea { width: 1100px !important; background: white !important; padding: 40px !important; } 
+                #mainGrid { display: block !important; }
+                #outputColumn { width: 100% !important; margin: 0 !important; }
+                #chartSection { width: 100% !important; border-radius: 1rem !important; }
+                #chartContainer { width: 96% !important; margin: 0 auto !important; height: 500px !important; }
+            `;
+            document.head.appendChild(style);
+            
+            try {
+                const canvas = await html2canvas(document.getElementById('printableArea'), { 
+                    scale: 2.5, backgroundColor: '#ffffff', windowWidth: 1100 
+                });
+                const link = document.createElement('a');
+                link.download = `CiT_생애곡선_이미지_${new Date().toISOString().slice(0,10)}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } finally {
+                document.getElementById('export-style').remove();
+            }
+        }
+
+        async function downloadPDF() {
+            const btn = document.getElementById('pdfBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loader"></span>`;
+            
+            document.querySelectorAll('textarea').forEach(ta => syncTextToPrint(ta.id));
+            const style = document.createElement('style');
+            style.id = 'pdf-style';
+            style.innerHTML = `
+                .no-print { display: none !important; } 
+                .print-text { display: block !important; } 
+                .journal-card { box-shadow: none !important; border: 1.5px solid #eee !important; } 
+                #printableArea { width: 1000px !important; margin: 0 auto !important; padding: 25px !important; background: white !important; } 
+                #mainGrid { display: block !important; }
+                #outputColumn { width: 100% !important; margin: 0 !important; }
+                #chartSection { width: 100% !important; }
+                #chartContainer { width: 98% !important; margin: 0 auto !important; height: 450px !important; }
+                textarea { display: none !important; }
+            `;
+            document.head.appendChild(style);
+            document.getElementById('pdfFooter').classList.remove('hidden');
+
+            await new Promise(r => setTimeout(r, 700));
+
+            try {
+                const canvas = await html2canvas(document.getElementById('printableArea'), { 
+                    scale: 3, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1000 
+                });
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const imgWidth = pageWidth * 0.94; 
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', (pageWidth - imgWidth) / 2, 12, imgWidth, imgHeight);
+                pdf.save(`CiT_생애곡선_리포트_${new Date().toISOString().slice(0,10)}.pdf`);
+            } finally {
+                document.getElementById('pdf-style').remove();
+                document.getElementById('pdfFooter').classList.add('hidden');
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="file-text" size="14"></i> PDF 리포트`;
+                lucide.createIcons();
+            }
+        }
+    </script>
+</body>
+</html>

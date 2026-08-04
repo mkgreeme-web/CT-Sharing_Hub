@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f7fbff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="인생 수레바퀴">
+    <title>인생 수레바퀴 | Life Wheel</title>
+    <style>
+        :root {
+            --bg: #f7fbff;
+            --surface: rgba(255, 255, 255, 0.78);
+            --surface-strong: rgba(255, 255, 255, 0.94);
+            --line: rgba(74, 107, 141, 0.16);
+            --text: #1f2a37;
+            --muted: #64748b;
+            --blue: #2f80ed;
+            --blue-soft: #d8ebff;
+            --orange: #f59e42;
+            --orange-soft: #fff0df;
+            --green: #2ca58d;
+            --shadow: 0 20px 60px rgba(33, 77, 126, 0.12);
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; }
+
+        html {
+            min-height: 100%;
+            background:
+                radial-gradient(circle at 14% 10%, rgba(47, 128, 237, 0.12), transparent 28rem),
+                radial-gradient(circle at 84% 18%, rgba(245, 158, 66, 0.14), transparent 24rem),
+                linear-gradient(135deg, #f8fcff 0%, #fffaf5 100%);
+        }
+
+        body {
+            min-height: 100%;
+            margin: 0;
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+            letter-spacing: 0;
+        }
+
+        button, input, textarea { font: inherit; }
+
+        button {
+            border: 0;
+            cursor: pointer;
+        }
+
+        .app {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            color: var(--blue);
+            background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(226,241,255,0.76));
+            border: 1px solid rgba(47, 128, 237, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 10px 28px rgba(47, 128, 237, 0.16);
+        }
+
+        h1, h2, h3, p { margin: 0; }
+
+        h1 {
+            font-size: clamp(24px, 3.5vw, 38px);
+            line-height: 1.15;
+            font-weight: 800;
+            color: #172033;
+        }
+
+        .subtitle {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            flex: 0 0 auto;
+        }
+
+        .btn {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 14px;
+            color: #233246;
+            background: var(--surface-strong);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: 0 6px 20px rgba(28, 61, 95, 0.08);
+            font-weight: 700;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover { transform: translateY(-1px); border-color: rgba(47, 128, 237, 0.32); }
+        .btn.primary { color: white; background: linear-gradient(135deg, #2f80ed, #2569c8); border-color: transparent; }
+        .btn.warm { color: #7b4308; background: linear-gradient(135deg, #fff3e5, #ffe4c2); border-color: rgba(245, 158, 66, 0.28); }
+        .btn.guide { color: #1f5f9f; background: rgba(239, 247, 255, 0.92); border-color: rgba(47, 128, 237, 0.22); }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 18px;
+            padding: clamp(18px, 3vw, 28px);
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+            gap: 22px;
+            align-items: stretch;
+        }
+
+        .intro-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            justify-content: space-between;
+        }
+
+        .eyebrow {
+            width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            color: #2264ae;
+            background: rgba(216, 235, 255, 0.72);
+            border: 1px solid rgba(47, 128, 237, 0.14);
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .principle {
+            max-width: 680px;
+            color: #4c5d73;
+            font-size: clamp(16px, 2vw, 18px);
+            line-height: 1.75;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+        }
+
+        .metric strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 23px;
+            color: #172033;
+        }
+
+        .metric span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .quote-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            min-height: 100%;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,249,242,0.88));
+            border: 1px solid rgba(245, 158, 66, 0.22);
+            border-radius: var(--radius);
+        }
+
+        .quote-card p {
+            color: #3b4656;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .quote-card .small {
+            color: #8a6a45;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 390px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 18px 0;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .panel-body { padding: 18px; }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .step-dot {
+            height: 8px;
+            background: rgba(100, 116, 139, 0.18);
+            border-radius: 999px;
+            transition: background 160ms ease, transform 160ms ease;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(90deg, var(--blue), var(--orange));
+            transform: scaleY(1.35);
+        }
+
+        .domain-card {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+        }
+
+        .domain-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .domain-kicker {
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .domain-name {
+            margin-top: 3px;
+            font-size: 23px;
+            font-weight: 850;
+            line-height: 1.22;
+        }
+
+        .domain-score {
+            min-width: 58px;
+            padding: 8px 10px;
+            color: #1c5fae;
+            background: var(--blue-soft);
+            border-radius: var(--radius);
+            text-align: center;
+            font-weight: 900;
+        }
+
+        .domain-desc {
+            color: var(--muted);
+            line-height: 1.65;
+            font-size: 14px;
+        }
+
+        .control-group {
+            display: grid;
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .range-line {
+            display: grid;
+            gap: 8px;
+        }
+
+        .range-line.hidden { display: none; }
+
+        .range-line label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            color: #344256;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .score-chip {
+            min-width: 42px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            text-align: center;
+            font-weight: 900;
+        }
+
+        .score-chip.now { color: #1c5fae; background: var(--blue-soft); }
+        .score-chip.future { color: #9a560e; background: var(--orange-soft); }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--blue);
+        }
+
+        .future-range { accent-color: var(--orange); }
+
+        textarea, input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            outline: none;
+            resize: vertical;
+            transition: border-color 160ms ease, box-shadow 160ms ease;
+        }
+
+        select {
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%);
+            background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+        }
+
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: rgba(47, 128, 237, 0.42);
+            box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1);
+        }
+
+        .goal-settings {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 10px;
+            padding: 12px;
+            background: rgba(255, 244, 229, 0.68);
+            border: 1px solid rgba(245, 158, 66, 0.2);
+            border-radius: var(--radius);
+        }
+
+        .goal-settings-block {
+            padding: 18px 18px 0;
+        }
+
+        .goal-settings-block.hidden { display: none; }
+
+        .goal-hint {
+            grid-column: 1 / -1;
+            color: #8a5a20;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.55;
+        }
+
+        .goal-field {
+            display: grid !important;
+            align-items: start !important;
+            justify-content: stretch !important;
+            gap: 7px !important;
+        }
+
+        .goal-field span {
+            color: #8a5a20;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .nav-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .chart-card {
+            position: sticky;
+            top: 16px;
+        }
+
+        .chart-wrap {
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) 260px;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .wheel-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            min-height: 340px;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-item.muted {
+            opacity: 0.35;
+        }
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .swatch.now { background: rgba(47, 128, 237, 0.74); }
+        .swatch.future { background: rgba(245, 158, 66, 0.74); }
+
+        .insights {
+            display: grid;
+            gap: 10px;
+        }
+
+        .insight {
+            padding: 13px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+        }
+
+        .insight-label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .insight strong {
+            display: block;
+            color: #182436;
+            font-size: 18px;
+            line-height: 1.3;
+        }
+
+        .insight p {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .domains-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .mini-domain {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.66);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            transition: border-color 160ms ease, transform 160ms ease;
+        }
+
+        .mini-domain.active {
+            border-color: rgba(47, 128, 237, 0.52);
+            transform: translateY(-1px);
+            background: rgba(239, 247, 255, 0.9);
+        }
+
+        .mini-domain button {
+            width: 100%;
+            padding: 0;
+            text-align: left;
+            color: inherit;
+            background: transparent;
+        }
+
+        .mini-domain b {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        .bars {
+            display: grid;
+            gap: 4px;
+        }
+
+        .bar {
+            height: 7px;
+            overflow: hidden;
+            background: rgba(100,116,139,0.16);
+            border-radius: 999px;
+        }
+
+        .bar span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .bar.now span { background: var(--blue); }
+        .bar.future span { background: var(--orange); }
+        .bar.hidden { display: none; }
+
+        .reflection-panel {
+            margin-top: 18px;
+        }
+
+        .reflection-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #344256;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding: 18px 2px 0;
+            color: #7a8798;
+            border-top: 1px dashed rgba(100,116,139,0.24);
+            font-size: clamp(10px, 1.5vw, 12px);
+            font-weight: 700;
+        }
+
+        .footer span:first-child { flex: 0 0 auto; }
+        .footer span:last-child {
+            min-width: 0;
+            text-align: right;
+            text-wrap: balance;
+        }
+
+        .toast {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 20;
+            max-width: min(420px, calc(100% - 32px));
+            padding: 12px 14px;
+            color: #16406f;
+            background: rgba(235, 246, 255, 0.96);
+            border: 1px solid rgba(47, 128, 237, 0.22);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 180ms ease, opacity 180ms ease;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.hidden { display: none; }
+
+        .guide-modal {
+            width: min(860px, 100%);
+            max-height: min(86vh, 920px);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(226, 232, 240, 0.92);
+            border-radius: var(--radius);
+            box-shadow: 0 28px 90px rgba(15, 23, 42, 0.24);
+        }
+
+        .guide-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px 22px 18px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.14);
+            background: linear-gradient(135deg, rgba(239, 247, 255, 0.96), rgba(255, 247, 237, 0.9));
+        }
+
+        .guide-head h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #172033;
+            font-size: clamp(22px, 3vw, 30px);
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .guide-head p {
+            margin-top: 8px;
+            color: #526174;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            color: #475569;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(100, 116, 139, 0.18);
+            border-radius: var(--radius);
+        }
+
+        .guide-body {
+            max-height: calc(min(86vh, 920px) - 112px);
+            overflow-y: auto;
+            padding: 22px;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .guide-section {
+            padding: 16px;
+            background: rgba(248, 251, 255, 0.88);
+            border: 1px solid rgba(100, 116, 139, 0.13);
+            border-radius: var(--radius);
+        }
+
+        .guide-section.wide { grid-column: 1 / -1; }
+
+        .guide-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: #1d314a;
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .guide-section p,
+        .guide-section li {
+            color: #536174;
+            font-size: 14px;
+            line-height: 1.72;
+        }
+
+        .guide-section ul,
+        .guide-section ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .guide-section li + li { margin-top: 7px; }
+
+        .guide-note {
+            margin-top: 12px;
+            padding: 12px;
+            color: #7b4308;
+            background: rgba(255, 240, 223, 0.74);
+            border: 1px solid rgba(245, 158, 66, 0.2);
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 980px) {
+            .hero-grid, .layout, .chart-wrap {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card { position: static; }
+            .wheel-box { min-height: 300px; }
+            .domains-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .reflection-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 680px) {
+            .app {
+                width: min(100% - 20px, 1180px);
+                padding-top: 12px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+            .actions .btn { width: 100%; padding-inline: 10px; }
+            .actions .btn.guide { grid-column: 1 / -1; grid-row: 2; }
+            .metrics { grid-template-columns: 1fr; }
+            .panel-head { align-items: flex-start; flex-direction: column; }
+            .goal-settings { grid-template-columns: 1fr; }
+            .domains-grid { grid-template-columns: 1fr; }
+            .guide-grid { grid-template-columns: 1fr; }
+            .guide-head { padding: 18px; }
+            .guide-body { padding: 16px; }
+            .footer {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .footer span:last-child { text-align: left; }
+            .wheel-box { min-height: 280px; }
+        }
+
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .app { width: 100%; padding: 0; }
+            .panel, .hero { box-shadow: none; border-color: #e5e7eb; background: white; }
+            .chart-card { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2"></circle><path d="M12 3v7M12 14v7M3 12h7M14 12h7M5.64 5.64l4.95 4.95M13.41 13.41l4.95 4.95M18.36 5.64l-4.95 4.95M10.59 13.41l-4.95 4.95"></path></symbol>
+        <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"></path><path d="M3 21v-5h5"></path><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"></path><path d="M21 3v5h-5"></path></symbol>
+        <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></symbol>
+        <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></symbol>
+        <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"></path></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H21"></path><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H21v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"></path></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></symbol>
+    </svg>
+
+    <main class="app">
+        <header class="topbar">
+            <div class="brand">
+                <div class="mark"><svg class="icon" width="26" height="26"><use href="#i-wheel"></use></svg></div>
+                <div>
+                    <h1>인생 수레바퀴</h1>
+                    <p class="subtitle">현재의 균형을 먼저 완성하고, 원하는 미래 시점의 목표를 차분히 그리는 코칭 여정</p>
+                </div>
+            </div>
+            <div class="actions no-print">
+                <button class="btn warm" id="resetBtn" type="button"><svg class="icon"><use href="#i-refresh"></use></svg>초기화</button>
+                <button class="btn primary" id="saveBtn" type="button"><svg class="icon"><use href="#i-save"></use></svg>이미지 저장</button>
+                <button class="btn guide" id="guideBtn" type="button"><svg class="icon"><use href="#i-book"></use></svg>사용자 가이드</button>
+            </div>
+        </header>
+
+        <section class="hero" aria-label="도구 소개">
+            <div class="hero-grid">
+                <div class="intro-copy">
+                    <div>
+                        <span class="eyebrow"><svg class="icon"><use href="#i-spark"></use></svg>Life Wheel Coaching Model</span>
+                        <p class="principle" style="margin-top:16px;">
+                            점수를 잘 매기는 도구가 아니라, 내 삶의 모양을 정성스럽게 바라보는 도구입니다.
+                            완벽한 균형보다 중요한 것은 지금의 불균형이 나에게 어떤 의미인지 알아차리는 일입니다.
+                        </p>
+                    </div>
+                    <div class="metrics" aria-label="요약 지표">
+                        <div class="metric"><strong id="avgNow">0.0</strong><span>현재 평균</span></div>
+                        <div class="metric"><strong id="avgFuture">-</strong><span id="avgFutureLabel">미래 목표 평균</span></div>
+                        <div class="metric"><strong id="balanceIndex">0%</strong><span>둥근 균형감</span></div>
+                    </div>
+                </div>
+                <aside class="quote-card">
+                    <p>
+                        건강, 관계, 진로, 재정, 여가, 정체성, 환경, 사회 기여를 한 장의 원 안에 담아
+                        말로 설명하기 어려웠던 막막함을 숫자와 모양으로 바라봅니다.
+                    </p>
+                    <p class="small">Paul J. Meyer의 Life Wheel 도구와 긍정심리학 관점을 바탕으로 재구성</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="layout">
+            <div class="panel no-print">
+                <div class="goal-settings-block hidden" id="goalSettingsBlock">
+                    <div class="goal-settings" aria-label="미래 목표 시점 설정">
+                        <p class="goal-hint">기본은 3개월 후입니다. 필요하면 시점을 먼저 수정한 뒤 목표 점수를 입력하세요.</p>
+                        <label class="goal-field" for="goalUnit">
+                            <span>단위</span>
+                            <select id="goalUnit">
+                                <option value="month">월</option>
+                                <option value="year">년</option>
+                            </select>
+                        </label>
+                        <label class="goal-field" for="goalAmount">
+                            <span>기간</span>
+                            <input id="goalAmount" type="number" min="1" max="99" step="1" inputmode="numeric">
+                        </label>
+                    </div>
+                </div>
+                <div class="panel-head">
+                    <h2 class="panel-title" id="inputTitle"><svg class="icon"><use href="#i-heart"></use></svg>현재 만족도 입력</h2>
+                    <span id="stepCounter" class="eyebrow">현재 1 / 8</span>
+                </div>
+                <div class="panel-body">
+                    <div class="steps" id="steps"></div>
+                    <article class="domain-card">
+                        <div class="domain-top">
+                            <div>
+                                <div class="domain-kicker" id="domainKicker">영역 01</div>
+                                <h3 class="domain-name" id="domainName">건강</h3>
+                            </div>
+                            <div class="domain-score"><span id="domainScore">6</span>점</div>
+                        </div>
+                        <p class="domain-desc" id="domainDesc"></p>
+                        <div class="control-group">
+                            <div class="range-line" id="nowControl">
+                                <label for="nowRange">현재 만족도 <span class="score-chip now" id="nowChip">6</span></label>
+                                <input id="nowRange" type="range" min="0" max="10" step="1">
+                            </div>
+                            <div class="range-line" id="futureControl">
+                                <label for="futureRange"><span id="futureRangeLabel">미래 목표</span> <span class="score-chip future" id="futureChip">8</span></label>
+                                <input id="futureRange" class="future-range" type="range" min="0" max="10" step="1">
+                            </div>
+                            <div class="field">
+                                <label for="noteInput">이 점수가 나에게 말해주는 것</label>
+                                <textarea id="noteInput" rows="4" placeholder="예: 몸은 버티고 있지만 수면의 질을 먼저 돌보고 싶다."></textarea>
+                            </div>
+                        </div>
+                    </article>
+                    <div class="nav-row">
+                        <button class="btn" id="prevBtn" type="button"><svg class="icon"><use href="#i-chevron-left"></use></svg>이전</button>
+                        <button class="btn primary" id="nextBtn" type="button">다음<svg class="icon"><use href="#i-chevron-right"></use></svg></button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <section class="panel chart-card" id="reportArea">
+                    <div class="panel-head">
+                        <h2 class="panel-title"><svg class="icon"><use href="#i-target"></use></svg>실시간 수레바퀴</h2>
+                        <div class="legend">
+                            <span class="legend-item"><i class="swatch now"></i>현재</span>
+                            <span class="legend-item" id="futureLegend"><i class="swatch future"></i><span id="futureLegendText">미래 목표</span></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-wrap">
+                            <div class="wheel-box"><canvas id="wheelCanvas" aria-label="인생 수레바퀴 차트"></canvas></div>
+                            <aside class="insights">
+                                <div class="insight">
+                                    <span class="insight-label">가장 든든한 영역</span>
+                                    <strong id="strongArea">-</strong>
+                                    <p id="strongText">현재 가장 높은 만족도를 보이는 영역입니다.</p>
+                                </div>
+                                <div class="insight">
+                                    <span class="insight-label">돌봄이 필요한 영역</span>
+                                    <strong id="careArea">-</strong>
+                                    <p id="careText">낮아서 나쁜 영역이 아니라, 이야기를 들어볼 영역입니다.</p>
+                                </div>
+                                <div class="insight">
+                                    <span class="insight-label" id="moveLabel">미래 목표 가장 큰 이동</span>
+                                    <strong id="moveArea">-</strong>
+                                    <p id="moveText">목표 입력을 시작하면 변화의 폭이 가장 큰 영역을 보여줍니다.</p>
+                                </div>
+                            </aside>
+                        </div>
+                        <div class="domains-grid" id="domainsGrid"></div>
+                    </div>
+                </section>
+
+                <section class="panel reflection-panel">
+                    <div class="panel-head">
+                        <h2 class="panel-title"><svg class="icon"><use href="#i-spark"></use></svg>마무리 성찰</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="reflection-grid">
+                            <div class="field">
+                                <label for="nameInput">이름 또는 별칭</label>
+                                <input id="nameInput" type="text" placeholder="그리메">
+                            </div>
+                            <div class="field">
+                                <label for="seasonInput">이번 점검의 이름</label>
+                                <input id="seasonInput" type="text" placeholder="2026년 봄 점검">
+                            </div>
+                            <div class="field">
+                                <label for="oneActionInput">이번 주 작은 행동</label>
+                                <input id="oneActionInput" type="text" placeholder="잠들기 전 휴대폰을 20분 일찍 내려놓기">
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <span>All rights reserved by BLISS</span>
+                            <span>인생수레바퀴 Coaching Model built by MK 컨설팅 &amp; 코칭</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="modal-overlay hidden no-print" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+        <div class="guide-modal">
+            <div class="guide-head">
+                <div>
+                    <h2 id="guideTitle"><svg class="icon"><use href="#i-book"></use></svg>인생 수레바퀴 사용자 가이드</h2>
+                    <p>이 앱은 삶을 점수로 단정하기보다, 지금의 균형과 앞으로 돌보고 싶은 방향을 한 장의 수레바퀴로 정리하도록 돕는 코칭 도구입니다.</p>
+                </div>
+                <button class="icon-btn" id="guideCloseBtn" type="button" aria-label="사용자 가이드 닫기"><svg class="icon"><use href="#i-x"></use></svg></button>
+            </div>
+            <div class="guide-body">
+                <div class="guide-grid">
+                    <section class="guide-section wide">
+                        <h3><svg class="icon"><use href="#i-target"></use></svg>용도와 목적</h3>
+                        <p>
+                            인생 수레바퀴는 건강, 관계, 진로·학업, 재정, 여가·취미, 정체성·가치, 환경·주거, 사회·기여의 8개 영역을 살펴보며
+                            현재 삶의 균형을 시각화하는 도구입니다. 모든 영역을 10점으로 만드는 것이 목적이 아니라,
+                            어떤 영역이 나를 지탱하고 있고 어떤 영역이 돌봄을 요청하는지 알아차리는 것이 핵심입니다.
+                        </p>
+                        <div class="guide-note">낮은 점수는 실패의 표시가 아닙니다. 지금 삶의 우선순위, 에너지 배분, 회복 필요성을 알려주는 신호로 바라봐 주세요.</div>
+                    </section>
+
+                    <section class="guide-section">
+                        <h3><svg class="icon"><use href="#i-heart"></use></svg>입력 흐름</h3>
+                        <ol>
+                            <li>먼저 8개 영역의 현재 만족도를 입력합니다.</li>
+                            <li>현재 수레바퀴가 완성되면 목표 입력 단계로 넘어갑니다.</li>
+                            <li>목표 1/8 화면에서 미래 시점을 확인합니다. 기본값은 3개월 후입니다.</li>
+                            <li>필요하면 월/년과 기간 숫자를 수정한 뒤 목표 점수를 입력합니다.</li>
+                            <li>목표 2/8부터는 같은 미래 시점 기준으로 점수만 이어서 입력합니다.</li>
+                        </ol>
+                    </section>
+
+                    <section class="guide-section">
+                        <h3><svg class="icon"><use href="#i-spark"></use></svg>점수 기준</h3>
+                        <ul>
+                            <li>0점은 거의 충족되지 않거나 큰 결핍을 느끼는 상태입니다.</li>
+                            <li>5점은 어느 정도 유지되고 있지만 아쉬움도 분명한 상태입니다.</li>
+                            <li>10점은 지금의 나에게 매우 충분하고 만족스러운 상태입니다.</li>
+                            <li>타인과 비교하지 말고, 오늘의 주관적 만족감을 기준으로 입력합니다.</li>
+                        </ul>
+                    </section>
+
+                    <section class="guide-section">
+                        <h3><svg class="icon"><use href="#i-wheel"></use></svg>차트 읽는 법</h3>
+                        <ul>
+                            <li>파란 영역은 현재 만족도입니다.</li>
+                            <li>주황 영역은 사용자가 정한 미래 시점의 목표입니다.</li>
+                            <li>둥근 모양일수록 균형감이 높고, 찌그러진 부분은 대화와 성찰이 필요한 영역입니다.</li>
+                            <li>오른쪽 분석 카드는 가장 든든한 영역, 돌봄이 필요한 영역, 목표 변화가 큰 영역을 요약합니다.</li>
+                        </ul>
+                    </section>
+
+                    <section class="guide-section">
+                        <h3><svg class="icon"><use href="#i-save"></use></svg>저장과 기록</h3>
+                        <ul>
+                            <li>입력 내용은 현재 기기의 브라우저 저장소에 자동 저장됩니다.</li>
+                            <li>이미지 저장 버튼을 누르면 고해상도 PNG 리포트를 내려받을 수 있습니다.</li>
+                            <li>리포트에는 현재/목표 점수, 성찰 메모, 작은 행동, 저작권 문구가 함께 포함됩니다.</li>
+                            <li>새로 시작하려면 초기화 버튼을 사용합니다.</li>
+                        </ul>
+                    </section>
+
+                    <section class="guide-section wide">
+                        <h3><svg class="icon"><use href="#i-spark"></use></svg>코칭 활용 팁</h3>
+                        <ul>
+                            <li>점수를 입력한 뒤 “왜 낮은가?”보다 “이 점수가 나에게 어떻게 느껴지는가?”를 먼저 물어보세요.</li>
+                            <li>목표 점수는 압박이 아니라 방향입니다. 한 번에 크게 바꾸기보다 작은 행동 하나를 정하는 것이 좋습니다.</li>
+                            <li>1개월, 3개월, 1년처럼 같은 도구를 반복 사용하면 변화의 흐름을 눈으로 확인할 수 있습니다.</li>
+                            <li>성찰 메모에는 원인 분석보다 지금 떠오르는 감정, 필요, 다음 행동을 짧게 적어도 충분합니다.</li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DOMAINS = [
+            { name: "건강", key: "신체, 정신, 수면", desc: "몸과 마음의 회복력, 수면의 질, 일상을 지탱하는 에너지를 살펴봅니다." },
+            { name: "관계", key: "가족, 친구, 연애", desc: "나를 지지하는 사람들, 가까운 관계의 온도, 소통의 안정감을 바라봅니다." },
+            { name: "진로·학업", key: "목표, 성장, 공부", desc: "배움과 일의 방향, 성취감, 앞으로의 가능성을 향한 움직임을 점검합니다." },
+            { name: "재정", key: "용돈, 저축, 독립", desc: "돈에 대한 안정감, 소비와 저축의 리듬, 자립을 위한 기반을 확인합니다." },
+            { name: "여가·취미", key: "쉼, 즐거움, 창의", desc: "쉬는 힘, 즐거움을 느끼는 감각, 나를 살리는 창의적 시간을 살핍니다." },
+            { name: "정체성·가치", key: "나는 누구인가", desc: "나답게 살고 있다는 감각, 중요한 가치, 선택의 기준을 돌아봅니다." },
+            { name: "환경·주거", key: "공간, 동네, 독립", desc: "머무는 공간의 안전함, 동네와 생활 환경, 정돈된 일상의 기반을 봅니다." },
+            { name: "사회·기여", key: "공동체, 의미, 봉사", desc: "내 삶이 더 큰 맥락과 연결되는 방식, 공동체와 의미의 감각을 살핍니다." }
+        ];
+
+        const STORAGE_KEY = "cit-life-wheel-v1";
+        const defaultState = {
+            phase: "now",
+            goalStarted: false,
+            goalCustomized: false,
+            goalUnit: "month",
+            goalAmount: 3,
+            currentStep: 0,
+            now: [6, 6, 5, 5, 4, 6, 5, 4],
+            future: [6, 6, 5, 5, 4, 6, 5, 4],
+            notes: Array(8).fill(""),
+            name: "",
+            season: "",
+            oneAction: ""
+        };
+
+        let state = loadState();
+        let toastTimer = null;
+
+        const $ = (id) => document.getElementById(id);
+
+        function loadState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (!saved) return structuredClone(defaultState);
+                return {
+                    ...structuredClone(defaultState),
+                    ...saved,
+                    phase: saved.phase === "future" ? "future" : "now",
+                    goalStarted: Boolean(saved.goalStarted || saved.phase === "future"),
+                    goalCustomized: Boolean(saved.goalCustomized),
+                    goalUnit: saved.goalCustomized && saved.goalUnit === "year" ? "year" : "month",
+                    goalAmount: saved.goalCustomized ? normalizeGoalAmount(saved.goalAmount) : 3,
+                    now: Array.isArray(saved.now) ? saved.now.slice(0, 8) : defaultState.now,
+                    future: Array.isArray(saved.future) ? saved.future.slice(0, 8) : defaultState.future,
+                    notes: Array.isArray(saved.notes) ? saved.notes.slice(0, 8) : defaultState.notes
+                };
+            } catch {
+                return structuredClone(defaultState);
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function iconUse(id) {
+            return `<svg class="icon"><use href="#${id}"></use></svg>`;
+        }
+
+        function showToast(message) {
+            const toast = $("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+        }
+
+        function bindEvents() {
+            $("guideBtn").addEventListener("click", openGuide);
+            $("guideCloseBtn").addEventListener("click", closeGuide);
+            $("guideModal").addEventListener("click", (event) => {
+                if (event.target === $("guideModal")) closeGuide();
+            });
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && !$("guideModal").classList.contains("hidden")) closeGuide();
+            });
+            $("nowRange").addEventListener("input", (event) => {
+                state.now[state.currentStep] = Number(event.target.value);
+                if (!state.goalStarted) state.future[state.currentStep] = Number(event.target.value);
+                persistAndRender();
+            });
+            $("futureRange").addEventListener("input", (event) => {
+                state.goalStarted = true;
+                state.future[state.currentStep] = Number(event.target.value);
+                persistAndRender();
+            });
+            $("goalUnit").addEventListener("change", (event) => {
+                state.goalCustomized = true;
+                state.goalUnit = event.target.value === "year" ? "year" : "month";
+                persistAndRender();
+            });
+            $("goalAmount").addEventListener("input", (event) => {
+                state.goalCustomized = true;
+                state.goalAmount = normalizeGoalAmount(event.target.value);
+                persistAndRender();
+            });
+            $("noteInput").addEventListener("input", (event) => {
+                state.notes[state.currentStep] = event.target.value;
+                saveState();
+            });
+            $("prevBtn").addEventListener("click", movePrev);
+            $("nextBtn").addEventListener("click", moveNext);
+            $("saveBtn").addEventListener("click", exportReport);
+            $("resetBtn").addEventListener("click", resetApp);
+            ["nameInput", "seasonInput", "oneActionInput"].forEach((id) => {
+                $(id).addEventListener("input", (event) => {
+                    const map = { nameInput: "name", seasonInput: "season", oneActionInput: "oneAction" };
+                    state[map[id]] = event.target.value;
+                    saveState();
+                });
+            });
+            window.addEventListener("resize", () => drawWheel());
+        }
+
+        function openGuide() {
+            $("guideModal").classList.remove("hidden");
+            $("guideCloseBtn").focus();
+        }
+
+        function closeGuide() {
+            $("guideModal").classList.add("hidden");
+            $("guideBtn").focus();
+        }
+
+        function movePrev() {
+            if (state.currentStep > 0) {
+                state.currentStep -= 1;
+            } else if (state.phase === "future") {
+                state.phase = "now";
+                state.currentStep = 7;
+            }
+            persistAndRender();
+        }
+
+        function moveNext() {
+            if (state.currentStep < 7) {
+                state.currentStep += 1;
+            } else if (state.phase === "now") {
+                const hadGoalValues = state.goalStarted;
+                state.phase = "future";
+                state.goalStarted = true;
+                state.currentStep = 0;
+                if (!state.goalCustomized) {
+                    state.goalUnit = "month";
+                    state.goalAmount = 3;
+                }
+                if (!hadGoalValues) state.future = [...state.now];
+                showToast(`현재 만족도 수레바퀴가 완성되었습니다. 이제 ${getGoalLabel()} 목표를 입력해 주세요.`);
+            } else {
+                showToast(`${getGoalLabel()} 목표 수레바퀴까지 완성되었습니다.`);
+            }
+            persistAndRender();
+        }
+
+        function resetApp() {
+            if (!confirm("입력한 점수와 메모를 초기화할까요?")) return;
+            state = structuredClone(defaultState);
+            persistAndRender();
+            showToast("새로운 여정을 시작할 준비가 되었습니다.");
+        }
+
+        function persistAndRender() {
+            saveState();
+            render();
+        }
+
+        function render() {
+            renderStep();
+            renderMetrics();
+            renderGrid();
+            drawWheel();
+        }
+
+        function renderStep() {
+            const i = state.currentStep;
+            const domain = DOMAINS[i];
+            const isFuturePhase = state.phase === "future";
+            const goalLabel = getGoalLabel();
+            $("inputTitle").innerHTML = `${iconUse(isFuturePhase ? "i-target" : "i-heart")}${isFuturePhase ? `${goalLabel} 목표 입력` : "현재 만족도 입력"}`;
+            $("stepCounter").textContent = `${isFuturePhase ? "목표" : "현재"} ${i + 1} / 8`;
+            $("domainKicker").textContent = `영역 ${String(i + 1).padStart(2, "0")} · ${domain.key}`;
+            $("domainName").textContent = domain.name;
+            $("domainDesc").textContent = domain.desc;
+            $("domainScore").textContent = isFuturePhase ? state.future[i] : state.now[i];
+            $("nowChip").textContent = state.now[i];
+            $("futureChip").textContent = state.future[i];
+            $("nowRange").value = state.now[i];
+            $("futureRange").value = state.future[i];
+            $("goalUnit").value = state.goalUnit;
+            $("goalAmount").value = state.goalAmount;
+            $("futureRangeLabel").textContent = `${goalLabel} 목표`;
+            $("nowControl").classList.toggle("hidden", isFuturePhase);
+            $("futureControl").classList.toggle("hidden", !isFuturePhase);
+            $("goalSettingsBlock").classList.toggle("hidden", !(isFuturePhase && i === 0));
+            $("noteInput").value = state.notes[i] || "";
+            $("prevBtn").disabled = state.phase === "now" && i === 0;
+            if (state.phase === "now" && i === 7) {
+                $("nextBtn").innerHTML = `목표 입력 시작${iconUse("i-chevron-right")}`;
+            } else if (state.phase === "future" && i === 7) {
+                $("nextBtn").innerHTML = `완료${iconUse("i-chevron-right")}`;
+            } else {
+                $("nextBtn").innerHTML = `다음${iconUse("i-chevron-right")}`;
+            }
+            $("steps").innerHTML = DOMAINS.map((_, idx) => `<span class="step-dot ${idx <= i ? "active" : ""}"></span>`).join("");
+            $("nameInput").value = state.name || "";
+            $("seasonInput").value = state.season || "";
+            $("oneActionInput").value = state.oneAction || "";
+        }
+
+        function avg(values) {
+            return values.reduce((sum, value) => sum + value, 0) / values.length;
+        }
+
+        function normalizeGoalAmount(value) {
+            const number = parseInt(value, 10);
+            if (!Number.isFinite(number)) return 3;
+            return Math.max(1, Math.min(99, number));
+        }
+
+        function getGoalLabel() {
+            const amount = normalizeGoalAmount(state.goalAmount);
+            const unit = state.goalUnit === "year" ? "년" : "개월";
+            return `${amount}${unit} 후`;
+        }
+
+        function balanceIndex(values) {
+            const average = avg(values);
+            const variance = values.reduce((sum, value) => sum + Math.pow(value - average, 2), 0) / values.length;
+            const standardDeviation = Math.sqrt(variance);
+            return Math.max(0, Math.round((1 - standardDeviation / 5) * 100));
+        }
+
+        function renderMetrics() {
+            const showFuture = shouldShowFuture();
+            const goalLabel = getGoalLabel();
+            $("avgNow").textContent = avg(state.now).toFixed(1);
+            $("avgFuture").textContent = showFuture ? avg(state.future).toFixed(1) : "-";
+            $("avgFutureLabel").textContent = `${goalLabel} 목표 평균`;
+            $("balanceIndex").textContent = `${balanceIndex(state.now)}%`;
+            $("futureLegend").classList.toggle("muted", !showFuture);
+            $("futureLegendText").textContent = `${goalLabel} 목표`;
+            $("moveLabel").textContent = `${goalLabel} 가장 큰 이동`;
+
+            const maxNow = maxIndex(state.now);
+            const minNow = minIndex(state.now);
+            const maxMove = maxIndex(state.future.map((value, index) => value - state.now[index]));
+
+            $("strongArea").textContent = `${DOMAINS[maxNow].name} ${state.now[maxNow]}점`;
+            $("careArea").textContent = `${DOMAINS[minNow].name} ${state.now[minNow]}점`;
+            $("moveArea").textContent = showFuture ? `${DOMAINS[maxMove].name} +${Math.max(0, state.future[maxMove] - state.now[maxMove])}` : "목표 입력 전";
+            $("strongText").textContent = `${DOMAINS[maxNow].key} 영역에서 현재 삶을 지탱하는 힘이 보입니다.`;
+            $("careText").textContent = `${DOMAINS[minNow].key} 영역은 평가보다 먼저 돌봄의 언어로 살펴볼 곳입니다.`;
+            $("moveText").textContent = showFuture
+                ? `${DOMAINS[maxMove].key} 영역에서 ${goalLabel} 변화의 실마리를 찾을 수 있습니다.`
+                : "현재 만족도 8개를 먼저 완성하면 미래 목표 입력 단계가 열립니다.";
+        }
+
+        function shouldShowFuture() {
+            return state.goalStarted || state.phase === "future";
+        }
+
+        function maxIndex(values) {
+            return values.reduce((best, value, index) => value > values[best] ? index : best, 0);
+        }
+
+        function minIndex(values) {
+            return values.reduce((best, value, index) => value < values[best] ? index : best, 0);
+        }
+
+        function renderGrid() {
+            const showFuture = shouldShowFuture();
+            $("domainsGrid").innerHTML = DOMAINS.map((domain, index) => `
+                <div class="mini-domain ${index === state.currentStep ? "active" : ""}">
+                    <button type="button" data-step="${index}" aria-label="${domain.name} 영역으로 이동">
+                        <b>${index + 1}. ${domain.name}</b>
+                        <div class="bars">
+                            <div class="bar now"><span style="width:${state.now[index] * 10}%"></span></div>
+                            <div class="bar future ${showFuture ? "" : "hidden"}"><span style="width:${state.future[index] * 10}%"></span></div>
+                        </div>
+                    </button>
+                </div>
+            `).join("");
+            $("domainsGrid").querySelectorAll("button").forEach((button) => {
+                button.addEventListener("click", () => {
+                    state.currentStep = Number(button.dataset.step);
+                    persistAndRender();
+                });
+            });
+        }
+
+        function drawWheel(targetCanvas = $("wheelCanvas"), options = {}) {
+            const canvas = targetCanvas;
+            const box = canvas.parentElement || { clientWidth: options.size || 720, clientHeight: options.size || 720 };
+            const cssSize = options.size || Math.max(280, Math.min(box.clientWidth, box.clientHeight || box.clientWidth));
+            const scale = options.scale || window.devicePixelRatio || 1;
+            canvas.width = Math.round(cssSize * scale);
+            canvas.height = Math.round(cssSize * scale);
+            canvas.style.width = `${cssSize}px`;
+            canvas.style.height = `${cssSize}px`;
+
+            const ctx = canvas.getContext("2d");
+            ctx.setTransform(scale, 0, 0, scale, 0, 0);
+            ctx.clearRect(0, 0, cssSize, cssSize);
+
+            const cx = cssSize / 2;
+            const cy = cssSize / 2;
+            const radius = cssSize * 0.34;
+            const labelRadius = radius + cssSize * 0.105;
+            const startAngle = -Math.PI / 2;
+            const count = DOMAINS.length;
+
+            ctx.fillStyle = options.background || "rgba(255,255,255,0)";
+            ctx.fillRect(0, 0, cssSize, cssSize);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            for (let level = 10; level >= 1; level--) {
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * level / 10, 0, Math.PI * 2);
+                ctx.strokeStyle = level % 5 === 0 ? "rgba(68, 93, 123, 0.24)" : "rgba(68, 93, 123, 0.12)";
+                ctx.lineWidth = level % 5 === 0 ? 1.2 : 0.8;
+                ctx.stroke();
+            }
+
+            for (let i = 0; i < count; i++) {
+                const angle = startAngle + i * Math.PI * 2 / count;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+                ctx.strokeStyle = "rgba(68, 93, 123, 0.18)";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            if (shouldShowFuture()) {
+                drawPolygon(ctx, state.future, cx, cy, radius, startAngle, "rgba(245, 158, 66, 0.18)", "rgba(245, 158, 66, 0.92)", 2.5);
+            }
+            drawPolygon(ctx, state.now, cx, cy, radius, startAngle, "rgba(47, 128, 237, 0.22)", "rgba(47, 128, 237, 0.96)", 3);
+
+            ctx.font = `700 ${Math.max(11, cssSize * 0.029)}px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            DOMAINS.forEach((domain, i) => {
+                const angle = startAngle + i * Math.PI * 2 / count;
+                const x = cx + Math.cos(angle) * labelRadius;
+                const y = cy + Math.sin(angle) * labelRadius;
+                ctx.fillStyle = i === state.currentStep ? "#1f66b2" : "#334155";
+                wrapCanvasText(ctx, domain.name, x, y, cssSize * 0.18, Math.max(13, cssSize * 0.035));
+            });
+
+            ctx.fillStyle = "#64748b";
+            ctx.font = `800 ${Math.max(10, cssSize * 0.023)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+            ctx.fillText("0", cx, cy + 2);
+            ctx.fillText("10", cx, cy - radius - 8);
+        }
+
+        function drawPolygon(ctx, values, cx, cy, radius, startAngle, fill, stroke, width) {
+            ctx.beginPath();
+            values.forEach((value, index) => {
+                const angle = startAngle + index * Math.PI * 2 / values.length;
+                const r = radius * value / 10;
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = width;
+            ctx.stroke();
+
+            values.forEach((value, index) => {
+                const angle = startAngle + index * Math.PI * 2 / values.length;
+                const r = radius * value / 10;
+                ctx.beginPath();
+                ctx.arc(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, 4, 0, Math.PI * 2);
+                ctx.fillStyle = stroke;
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+        }
+
+        function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+            const chars = text.split("");
+            let line = "";
+            const lines = [];
+            chars.forEach((char) => {
+                const test = line + char;
+                if (ctx.measureText(test).width > maxWidth && line) {
+                    lines.push(line);
+                    line = char;
+                } else {
+                    line = test;
+                }
+            });
+            lines.push(line);
+            const offset = (lines.length - 1) * lineHeight / 2;
+            lines.forEach((item, index) => ctx.fillText(item, x, y - offset + index * lineHeight));
+        }
+
+        async function exportReport() {
+            const exportCanvas = document.createElement("canvas");
+            const scale = 3;
+            const width = 1200;
+            const height = 1700;
+            exportCanvas.width = width * scale;
+            exportCanvas.height = height * scale;
+            const ctx = exportCanvas.getContext("2d");
+            ctx.scale(scale, scale);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+            drawReportBackground(ctx, width, height);
+
+            ctx.fillStyle = "#172033";
+            ctx.font = "800 54px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+            ctx.fillText("인생 수레바퀴 리포트", 80, 110);
+            ctx.fillStyle = "#2f80ed";
+            ctx.font = "800 18px -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText("LIFE WHEEL COACHING MODEL", 82, 148);
+
+            ctx.fillStyle = "#526174";
+            ctx.font = "500 22px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+            const owner = state.name || "나의";
+            const season = state.season || formatDate();
+            ctx.fillText(`${owner} 삶의 균형 점검 · ${season}`, 80, 190);
+
+            const chartCanvas = document.createElement("canvas");
+            const chartHolder = document.createElement("div");
+            chartHolder.style.width = "720px";
+            chartHolder.style.height = "720px";
+            chartHolder.appendChild(chartCanvas);
+            document.body.appendChild(chartHolder);
+            chartHolder.style.position = "fixed";
+            chartHolder.style.left = "-9999px";
+            drawWheel(chartCanvas, { size: 720, scale: 2, background: "#ffffff" });
+            ctx.drawImage(chartCanvas, 50, 240, 700, 700);
+            document.body.removeChild(chartHolder);
+
+            drawSummaryCards(ctx, 760, 270);
+            drawScoreTable(ctx, 80, 980);
+            drawNotes(ctx, 80, 1340);
+
+            ctx.fillStyle = "#334155";
+            ctx.font = "800 22px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+            ctx.fillText("이번 주 작은 행동", 80, 1518);
+            ctx.fillStyle = "#526174";
+            ctx.font = "500 22px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+            wrapReportText(ctx, state.oneAction || "작고 구체적인 행동 하나를 정해 삶의 바퀴를 조금씩 굴려봅니다.", 80, 1554, 1040, 32, 2);
+
+            ctx.strokeStyle = "#d8e1ec";
+            ctx.beginPath();
+            ctx.moveTo(80, 1630);
+            ctx.lineTo(1120, 1630);
+            ctx.stroke();
+            ctx.fillStyle = "#718096";
+            const footerLeft = "All rights reserved by BLISS";
+            const footerRight = "인생수레바퀴 Coaching Model built by MK 컨설팅 & 코칭";
+            fitCanvasText(ctx, footerLeft, 80, 1672, 360, 17, 11, "left");
+            ctx.textAlign = "right";
+            fitCanvasText(ctx, footerRight, 1120, 1672, 650, 17, 10, "right");
+            ctx.textAlign = "left";
+
+            const blob = await new Promise((resolve) => exportCanvas.toBlob(resolve, "image/png"));
+            const filename = `인생수레바퀴_리포트_${formatDate("-")}.png`;
+            await saveBlob(filename, blob);
+            showToast("고해상도 PNG 리포트를 저장했습니다.");
+        }
+
+        function drawReportBackground(ctx, width, height) {
+            const blue = ctx.createRadialGradient(160, 80, 0, 160, 80, 520);
+            blue.addColorStop(0, "rgba(47,128,237,0.13)");
+            blue.addColorStop(1, "rgba(47,128,237,0)");
+            ctx.fillStyle = blue;
+            ctx.fillRect(0, 0, width, height);
+            const orange = ctx.createRadialGradient(1020, 80, 0, 1020, 80, 460);
+            orange.addColorStop(0, "rgba(245,158,66,0.14)");
+            orange.addColorStop(1, "rgba(245,158,66,0)");
+            ctx.fillStyle = orange;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function drawSummaryCards(ctx, x, y) {
+            const showFuture = shouldShowFuture();
+            const goalLabel = getGoalLabel();
+            const cards = [
+                ["현재 평균", avg(state.now).toFixed(1), "#2f80ed"],
+                [`${goalLabel} 목표 평균`, showFuture ? avg(state.future).toFixed(1) : "-", "#f59e42"],
+                ["둥근 균형감", `${balanceIndex(state.now)}%`, "#2ca58d"]
+            ];
+            cards.forEach((card, index) => {
+                const top = y + index * 145;
+                roundRect(ctx, x, top, 350, 112, 8, "#ffffff", "#dbe6f1");
+                ctx.fillStyle = "#64748b";
+                ctx.font = "800 18px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+                ctx.fillText(card[0], x + 26, top + 36);
+                ctx.fillStyle = card[2];
+                ctx.font = "900 46px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText(card[1], x + 26, top + 88);
+            });
+        }
+
+        function drawScoreTable(ctx, x, y) {
+            const showFuture = shouldShowFuture();
+            const goalLabel = getGoalLabel();
+            ctx.fillStyle = "#172033";
+            ctx.font = "800 28px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+            ctx.fillText("8개 영역 점수", x, y);
+            const rowH = 42;
+            DOMAINS.forEach((domain, index) => {
+                const top = y + 40 + index * rowH;
+                ctx.fillStyle = index % 2 === 0 ? "#f8fbff" : "#ffffff";
+                ctx.fillRect(x, top - 26, 1040, rowH);
+                ctx.fillStyle = "#334155";
+                ctx.font = "800 19px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+                ctx.fillText(`${index + 1}. ${domain.name}`, x + 16, top);
+                drawReportBar(ctx, x + 260, top - 18, 300, 18, state.now[index], "#2f80ed");
+                if (showFuture) drawReportBar(ctx, x + 620, top - 18, 300, 18, state.future[index], "#f59e42");
+                ctx.fillStyle = "#64748b";
+                ctx.font = "800 16px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText(`현재 ${state.now[index]}`, x + 570, top);
+                ctx.fillText(showFuture ? `${goalLabel} ${state.future[index]}` : `${goalLabel} -`, x + 930, top);
+            });
+        }
+
+        function drawNotes(ctx, x, y) {
+            const filledNotes = state.notes
+                .map((note, index) => ({ note: (note || "").trim(), domain: DOMAINS[index].name }))
+                .filter((item) => item.note)
+                .slice(0, 3);
+            if (!filledNotes.length) return;
+
+            ctx.fillStyle = "#172033";
+            ctx.font = "800 28px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+            ctx.fillText("성찰 메모", x, y);
+            filledNotes.forEach((item, index) => {
+                const top = y + 38 + index * 68;
+                ctx.fillStyle = "#2f80ed";
+                ctx.font = "800 17px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+                ctx.fillText(item.domain, x, top);
+                ctx.fillStyle = "#526174";
+                ctx.font = "500 18px -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+                wrapReportText(ctx, item.note, x + 130, top, 900, 26, 2);
+            });
+        }
+
+        function drawReportBar(ctx, x, y, width, height, value, color) {
+            roundRect(ctx, x, y, width, height, height / 2, "#e8eef6", null);
+            roundRect(ctx, x, y, width * value / 10, height, height / 2, color, null);
+        }
+
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fillStyle = fill;
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.strokeStyle = stroke;
+                ctx.stroke();
+            }
+        }
+
+        function fitCanvasText(ctx, text, x, y, maxWidth, maxSize, minSize, align = "left") {
+            let size = maxSize;
+            ctx.textAlign = align;
+            ctx.font = `700 ${size}px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif`;
+            while (ctx.measureText(text).width > maxWidth && size > minSize) {
+                size -= 1;
+                ctx.font = `700 ${size}px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif`;
+            }
+            ctx.fillText(text, x, y);
+        }
+
+        function wrapReportText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+            const words = text.split(/\s+/);
+            let line = "";
+            const lines = [];
+            words.forEach((word) => {
+                const test = line ? `${line} ${word}` : word;
+                if (ctx.measureText(test).width > maxWidth && line) {
+                    lines.push(line);
+                    line = word;
+                } else {
+                    line = test;
+                }
+            });
+            if (line) lines.push(line);
+            lines.slice(0, maxLines).forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight));
+        }
+
+        async function saveBlob(filename, blob) {
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                    return;
+                } catch (error) {
+                    if (error && error.name === "AbortError") return;
+                }
+            }
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function formatDate(separator = ".") {
+            const now = new Date();
+            return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join(separator);
+        }
+
+        bindEvents();
+        render();
+        showToast("입력 내용은 이 기기에 자동 저장됩니다.");
+    </script>
+</body>
+</html>

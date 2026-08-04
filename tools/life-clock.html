@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당신의 인생 시계</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Variables ─────────────────────────────────── */
+    :root {
+      --bg:           #fbfaf6;
+      --surface:      #ffffff;
+      --surface2:     #f3efe5;
+      --gold:         #a98222;
+      --gold-light:   #c59d34;
+      --gold-dim:     #d8c58a;
+      --text:         #25221d;
+      --text-dim:     #756f65;
+      --border:       rgba(169,130,34,0.24);
+    }
+
+    /* ─── Reset / Base ──────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 2rem;
+    }
+
+    /* Ambient glow */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 25% 15%, rgba(201,168,76,.14) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 75% 85%, rgba(80,60,180,.05) 0%, transparent 70%);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    /* ─── Header ────────────────────────────────────── */
+    .header { text-align: center; padding-top: .5rem; }
+
+    .header-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: .8;
+      margin-bottom: .6rem;
+    }
+
+    .header-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 6.5vw, 3.6rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: .04em;
+    }
+
+    .header-title .gold { color: var(--gold); }
+
+    .divider {
+      width: 56px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 1rem auto 0;
+    }
+
+    /* ─── Input Card ────────────────────────────────── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.8rem 2rem;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.4rem;
+    }
+
+    .input-group { display: flex; flex-direction: column; gap: .45rem; }
+
+    .input-label {
+      font-size: 1.088rem;
+      font-weight: 500;
+      letter-spacing: .1em;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      background: var(--surface2);
+      border: 1px solid rgba(169,130,34,.18);
+      border-radius: 10px;
+      transition: border-color .25s;
+      overflow: hidden;
+    }
+
+    .input-row:focus-within { border-color: var(--gold); }
+
+    .input-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: .85rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      width: 0; /* shrink properly in grid */
+    }
+
+    .input-row input::placeholder { color: rgba(37,34,29,.28); }
+
+    /* number spinners hidden for cleaner look */
+    .input-row input::-webkit-outer-spin-button,
+    .input-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .input-row input[type=number] { -moz-appearance: textfield; }
+
+    .input-suffix {
+      padding: .85rem 1rem .85rem .2rem;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: .95rem;
+      font-weight: 300;
+      color: var(--gold-light);
+      opacity: .75;
+      white-space: nowrap;
+    }
+
+    .input-help {
+      font-size: .798rem;
+      line-height: 1.5;
+      color: var(--text-dim);
+      letter-spacing: .02em;
+    }
+
+    /* ─── Info Boxes ─────────────────────────────────── */
+    .info-boxes {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .5s ease, transform .5s ease;
+    }
+
+    .info-boxes.show { opacity: 1; transform: translateY(0); }
+
+    .info-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-box::after {
+      content: '';
+      position: absolute; top: 0; left: 15%; right: 15%; height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .info-box-label {
+      font-size: .67rem;
+      letter-spacing: .1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: .3rem;
+    }
+
+    .info-box-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .info-box-val .unit {
+      font-size: .85rem;
+      font-weight: 400;
+      color: var(--gold-light);
+      opacity: .75;
+    }
+
+    /* ─── Progress Bar ───────────────────────────────── */
+    .progress-wrap {
+      opacity: 0;
+      transition: opacity .5s ease .1s;
+    }
+
+    .progress-wrap.show { opacity: 1; }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: .67rem;
+      color: var(--text-dim);
+      margin-bottom: .4rem;
+      letter-spacing: .04em;
+    }
+
+    .progress-meta .pct { color: var(--gold-light); font-family: 'JetBrains Mono', monospace; }
+
+    .progress-track {
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-light));
+      border-radius: 2px;
+      transition: width 1.2s cubic-bezier(.25,.8,.25,1);
+    }
+
+    /* ─── Clock Section ──────────────────────────────── */
+    .clock-section {
+      display: flex;
+      gap: 2.5rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .6s ease .15s, transform .6s ease .15s;
+    }
+
+    .clock-section.show { opacity: 1; transform: translateY(0); }
+
+    /* -- Analog -- */
+    .clock-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .7rem;
+    }
+
+    .clock-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .9rem;
+      letter-spacing: .2em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: .8;
+    }
+
+    #analogCanvas {
+      display: block;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 1px rgba(169,130,34,.18),
+        0 12px 32px rgba(80,64,28,.18),
+        0 0 42px rgba(201,168,76,.1);
+    }
+
+    /* -- Digital -- */
+    .digital-shell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .digital-frame {
+      background: #f4f4ee;
+      border: 3px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 1.4rem 2.2rem 1.2rem;
+      position: relative;
+      box-shadow:
+        inset 0 2px 6px rgba(0,0,0,.12),
+        0 12px 32px rgba(80,64,28,.16),
+        0 0 36px rgba(201,168,76,.1);
+    }
+
+    /* inner double border */
+    .digital-frame::before {
+      content: '';
+      position: absolute; inset: 5px;
+      border: 1.5px solid #2a2a2a;
+      border-radius: 9px;
+      pointer-events: none;
+    }
+
+    .digital-display {
+      position: relative;
+      line-height: 1;
+    }
+
+    .digital-ghost {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2.6rem, 9vw, 4.2rem);
+      font-weight: 700;
+      color: rgba(30,30,30,.09);
+      user-select: none;
+      letter-spacing: .05em;
+    }
+
+    .digital-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2.6rem, 9vw, 4.2rem);
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: .05em;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .digital-feet {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 14px;
+      width: 100%;
+    }
+
+    .foot {
+      width: 30px; height: 10px;
+      background: #f4f4ee;
+      border: 2.5px solid #1a1a1a;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+    }
+
+    /* ─── Active Time ───────────────────────────────── */
+    .active-card {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.45rem 1.7rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .6s ease .2s, transform .6s ease .2s;
+    }
+
+    .active-card.show { display: block; opacity: 1; transform: translateY(0); }
+
+    .active-toggle {
+      display: none;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .5s ease .2s, transform .5s ease .2s;
+    }
+
+    .active-toggle.show { display: flex; opacity: 1; transform: translateY(0); }
+
+    .active-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: .86rem;
+      line-height: 1.4;
+      user-select: none;
+    }
+
+    .active-toggle-label input {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .active-label {
+      font-size: .67rem;
+      font-weight: 500;
+      letter-spacing: .12em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: .45rem;
+    }
+
+    .active-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.85rem, 6vw, 3rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .active-value .unit {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: .42em;
+      font-weight: 400;
+      color: var(--gold-light);
+    }
+
+    .active-sentence {
+      margin-top: .7rem;
+      font-size: clamp(.88rem, 2.2vw, 1rem);
+      line-height: 1.8;
+      color: var(--text);
+      font-weight: 300;
+    }
+
+    .active-formula {
+      margin-top: .45rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      color: var(--text-dim);
+    }
+
+    .active-progress {
+      margin-top: .9rem;
+    }
+
+    .active-progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: .67rem;
+      color: var(--text-dim);
+      margin-bottom: .35rem;
+      letter-spacing: .04em;
+    }
+
+    .active-progress-meta .pct {
+      color: var(--gold);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ─── Message ─────────────────────────────────────── */
+    .message-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2rem 2.4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .6s ease .25s, transform .6s ease .25s;
+    }
+
+    .message-card.show { opacity: 1; transform: translateY(0); }
+
+    .message-card::before, .message-card::after {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 6rem;
+      color: var(--gold);
+      opacity: .12;
+      position: absolute;
+      line-height: 1;
+    }
+
+    .message-card::before { content: '\201C'; top: -.3rem; left: .8rem; }
+    .message-card::after  { content: '\201D'; bottom: -2.5rem; right: .8rem; }
+
+    .message-body {
+      font-size: clamp(.9rem, 2.4vw, 1.05rem);
+      font-weight: 300;
+      line-height: 2;
+      color: var(--text);
+      position: relative;
+    }
+
+    .msg-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .message-source {
+      margin-top: 1.1rem;
+      font-size: .7rem;
+      color: var(--text-dim);
+      font-style: italic;
+      letter-spacing: .04em;
+    }
+
+    .message-card-idle {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    /* ─── Footer ──────────────────────────────────────── */
+    .footer {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: .8rem;
+      border-top: 1px solid rgba(169,130,34,.16);
+      margin-top: .3rem;
+    }
+
+    .footer-credit {
+      font-size: .55rem;  /* 50% of ~1.1rem base */
+      color: var(--text-dim);
+      letter-spacing: .06em;
+      opacity: .55;
+    }
+
+    /* ─── Responsive ──────────────────────────────────── */
+    @media (max-width: 580px) {
+      .input-grid { grid-template-columns: 1fr; }
+      .clock-section { gap: 1.8rem; }
+      .active-card { padding: 1.25rem 1.2rem; }
+      .active-progress-meta { flex-direction: column; gap: .15rem; }
+      .message-card { padding: 1.5rem 1.4rem; }
+      .digital-frame { padding: 1rem 1.4rem .9rem; }
+    }
+
+    @media (max-width: 400px) {
+      body { padding: 1.5rem .75rem 1.5rem; }
+      .input-card { padding: 1.4rem 1.1rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- ── Header ── -->
+    <header class="header">
+      <p class="header-eyebrow">Your Life · Reimagined as Time</p>
+      <h1 class="header-title">당신의 <span class="gold">인생</span> 시계</h1>
+      <div class="divider"></div>
+    </header>
+
+    <!-- ── Inputs ── -->
+    <section class="input-card">
+      <div class="input-grid">
+        <div class="input-group">
+          <label class="input-label" for="lifespanInput">기대 수명</label>
+          <div class="input-row">
+            <input id="lifespanInput" type="number" min="1" max="150" placeholder="100" inputmode="numeric" />
+            <span class="input-suffix">세</span>
+          </div>
+          <p class="input-help">* 당신이 예상하는 기대 수명을 입력해 주세요</p>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="ageInput">현재 나이</label>
+          <div class="input-row">
+            <input id="ageInput" type="number" min="0" max="149" placeholder="30" inputmode="numeric" />
+            <span class="input-suffix">세</span>
+          </div>
+          <p class="input-help">*당신의 현재 나이를 입력해 주세요</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Info Boxes ── -->
+    <div class="info-boxes" id="infoBoxes">
+      <div class="info-box">
+        <div class="info-box-label">기대 수명</div>
+        <div class="info-box-val"><span id="dispLifespan">—</span><span class="unit"> 세</span></div>
+      </div>
+      <div class="info-box">
+        <div class="info-box-label">현재 나이</div>
+        <div class="info-box-val"><span id="dispAge">—</span><span class="unit"> 세</span></div>
+      </div>
+    </div>
+
+    <!-- ── Progress ── -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-meta">
+        <span>탄생 (0세)</span>
+        <span class="pct" id="pctLabel">—</span>
+        <span id="lifespanEnd">기대 수명</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- ── Clocks ── -->
+    <div class="clock-section" id="clockSection">
+
+      <!-- Analog -->
+      <div class="clock-col">
+        <span class="clock-tag">아날로그 시계</span>
+        <canvas id="analogCanvas"></canvas>
+      </div>
+
+      <!-- Digital -->
+      <div class="clock-col">
+        <span class="clock-tag">디지털 시계</span>
+        <div class="digital-shell">
+          <div class="digital-frame">
+            <div class="digital-display">
+              <div class="digital-ghost">88:88</div>
+              <div class="digital-time" id="digitalTime">--:--</div>
+            </div>
+          </div>
+          <div class="digital-feet">
+            <div class="foot"></div>
+            <div class="foot"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Message ── -->
+    <div class="message-card message-card-idle" id="messageCard">
+      <p class="message-body" id="messageBody">
+        기대 수명과 현재 나이를 입력하면<br>
+        당신만의 인생 시계가 시작됩니다.
+      </p>
+      <p class="message-source" id="messageSource"></p>
+    </div>
+
+    <!-- ── Active Time Toggle ── -->
+    <div class="active-toggle" id="activeToggle">
+      <label class="active-toggle-label" for="activeToggleInput">
+        <input id="activeToggleInput" type="checkbox" />
+        잔여 활성 활동 시간 보기
+      </label>
+    </div>
+
+    <!-- ── Active Time ── -->
+    <div class="active-card" id="activeCard">
+      <div class="active-label">잔여 활성 활동 시간</div>
+      <div class="active-value"><span id="activeYears">—</span><span class="unit"> 년</span></div>
+      <p class="active-sentence" id="activeSentence"></p>
+      <div class="active-progress">
+        <div class="active-progress-meta">
+          <span>총 활성 활동시간 중 진행률</span>
+          <span class="pct" id="activePct">—</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="activePctFill"></div>
+        </div>
+      </div>
+      <p class="active-formula" id="activeFormula"></p>
+    </div>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+      <span class="footer-credit">Built by MK 컨설팅 &amp; 코칭</span>
+    </footer>
+
+  </div><!-- /container -->
+
+  <script>
+    /* ── DOM refs ─────────────────────────────────── */
+    const lifespanInput = document.getElementById('lifespanInput');
+    const ageInput      = document.getElementById('ageInput');
+    const infoBoxes     = document.getElementById('infoBoxes');
+    const progressWrap  = document.getElementById('progressWrap');
+    const clockSection  = document.getElementById('clockSection');
+    const activeToggle  = document.getElementById('activeToggle');
+    const activeToggleInput = document.getElementById('activeToggleInput');
+    const activeCard    = document.getElementById('activeCard');
+    const messageCard   = document.getElementById('messageCard');
+    const canvas        = document.getElementById('analogCanvas');
+    const ctx           = canvas.getContext('2d');
+
+    let lastHours = null; // keeps track for redraw on resize
+
+    /* ── Canvas sizing ───────────────────────────── */
+    function resizeCanvas() {
+      const W = window.innerWidth;
+      const size = W < 420 ? 190 : W < 620 ? 220 : 260;
+      canvas.width  = size;
+      canvas.height = size;
+      drawClock(lastHours);
+    }
+
+    /* ── Main calculation ────────────────────────── */
+    function update() {
+      const ls  = parseFloat(lifespanInput.value);
+      const age = parseFloat(ageInput.value);
+      const valid = ls > 0 && age >= 0 && age <= ls && !isNaN(ls) && !isNaN(age);
+
+      if (!valid) {
+        resetUI();
+        return;
+      }
+
+      const ratio      = age / ls;
+      const totalHours = ratio * 24;
+      lastHours        = totalHours;
+
+      const hh  = Math.floor(totalHours);
+      const mm  = Math.floor((totalHours - hh) * 60);
+      const timeStr = pad(hh) + ':' + pad(mm);
+
+      // Info boxes
+      document.getElementById('dispLifespan').textContent = Math.floor(ls);
+      document.getElementById('dispAge').textContent      = Math.floor(age);
+      document.getElementById('lifespanEnd').textContent  = ls + '세';
+      infoBoxes.classList.add('show');
+
+      // Progress
+      const pct = Math.min(Math.round(ratio * 100), 100);
+      document.getElementById('pctLabel').textContent        = pct + '%';
+      document.getElementById('progressFill').style.width    = pct + '%';
+      progressWrap.classList.add('show');
+
+      // Digital
+      document.getElementById('digitalTime').textContent = timeStr;
+
+      // Analog
+      drawClock(totalHours);
+
+      // Active time
+      setActiveTime(ls, age);
+
+      // Message
+      setMessage(timeStr, hh, ratio);
+
+      // Reveal sections
+      clockSection.classList.add('show');
+      activeToggle.classList.add('show');
+      updateActiveVisibility();
+      messageCard.classList.add('show');
+      messageCard.classList.remove('message-card-idle');
+    }
+
+    function resetUI() {
+      lastHours = null;
+      infoBoxes.classList.remove('show');
+      progressWrap.classList.remove('show');
+      clockSection.classList.remove('show');
+      activeToggle.classList.remove('show');
+      activeCard.classList.remove('show');
+      messageCard.classList.remove('show');
+      messageCard.classList.add('message-card-idle');
+      document.getElementById('messageBody').innerHTML =
+        '기대 수명과 현재 나이를 입력하면<br>당신만의 인생 시계가 시작됩니다.';
+      document.getElementById('messageSource').textContent = '';
+      document.getElementById('digitalTime').textContent = '--:--';
+      document.getElementById('activeYears').textContent = '—';
+      document.getElementById('activeSentence').textContent = '';
+      document.getElementById('activeFormula').textContent = '';
+      document.getElementById('activePct').textContent = '—';
+      document.getElementById('activePctFill').style.width = '0%';
+      document.getElementById('progressFill').style.width = '0%';
+      drawClock(null);
+    }
+
+    /* ── Active time calculator ──────────────────── */
+    function setActiveTime(lifespan, age) {
+      const nonCognitiveYears = 5;
+      const lowActivityYears = Math.max(lifespan - 80, 0);
+      const activeYears = Math.max(lifespan - nonCognitiveYears - lowActivityYears, 0);
+      const remainingActiveYears = Math.max(activeYears - age, 0);
+      const usedActiveYears = Math.min(Math.max(age, 0), activeYears);
+      const activeProgressPct = activeYears > 0 ? Math.min(Math.round((usedActiveYears / activeYears) * 100), 100) : 100;
+      const formula = `${formatYear(activeYears)}(${formatYear(lifespan)}-${formatYear(nonCognitiveYears)}-${formatYear(lowActivityYears)})-${formatYear(age)}`;
+
+      document.getElementById('activeYears').textContent = formatYear(remainingActiveYears);
+      document.getElementById('activeFormula').textContent = `[${formula}]`;
+      document.getElementById('activePct').textContent = `${activeProgressPct}%`;
+      document.getElementById('activePctFill').style.width = `${activeProgressPct}%`;
+
+      const sentence = remainingActiveYears > 0
+        ? `비인지 활동 시기 0~5세와 저활동 시기 80세 이후를 제외하면, 앞으로 온전히 선택하고 움직일 수 있는 활성 활동 시간이 약 ${formatYear(remainingActiveYears)}년 남아 있습니다. 총 활성 활동시간 중 ${activeProgressPct}%를 지나왔습니다.`
+        : '비인지 활동 시기와 저활동 시기를 제외하면, 계산상 남은 활성 활동 시간은 0년입니다. 지금의 시간은 더 의식적으로 아껴 써야 할 구간입니다.';
+
+      document.getElementById('activeSentence').textContent = sentence;
+    }
+
+    function updateActiveVisibility() {
+      activeCard.classList.toggle('show', activeToggleInput.checked);
+    }
+
+    /* ── Message generator ──────────────────────── */
+    function setMessage(timeStr, hh, ratio) {
+      let period, advice;
+
+      if      (ratio < 0.083) { period = '새벽';      advice = '당신의 시간은 이제 막 시작되었습니다. 무한한 가능성이 앞에 펼쳐져 있습니다.'; }
+      else if (ratio < 0.167) { period = '이른 새벽';  advice = '씨앗을 심는 시간입니다. 배움과 준비가 가장 큰 자산이 될 것입니다.'; }
+      else if (ratio < 0.25)  { period = '새벽';      advice = '지금 이 시간은 어떤 것을 시작하거나 경험하기에 가장 좋은 때가 될 수 있습니다.'; }
+      else if (ratio < 0.375) { period = '아침';      advice = '지금 이 시간은 어떤 것을 시작하거나 경험하기에 가장 좋은 때가 될 수 있습니다.'; }
+      else if (ratio < 0.5)   { period = '오전';      advice = '인생의 전반부를 힘차게 달리고 있습니다. 쌓아온 경험이 더 높은 곳을 향하는 발판이 됩니다.'; }
+      else if (ratio === 0.5) { period = '정오';      advice = '인생의 정중앙, 정오에 서 있습니다. 지나온 절반만큼 빛나는 다음 절반이 당신을 기다리고 있습니다.'; }
+      else if (ratio < 0.625) { period = '오후';      advice = '경험과 열정이 함께하는 황금의 오후입니다. 지금까지 쌓아온 것들이 더욱 빛을 발합니다.'; }
+      else if (ratio < 0.75)  { period = '오후';      advice = '풍요로운 오후의 빛 속에서, 경험과 지혜로 주변을 따뜻하게 밝힐 수 있는 시간입니다.'; }
+      else if (ratio < 0.875) { period = '저녁';      advice = '아름다운 석양의 빛처럼, 삶이 쌓아온 이야기는 더욱 깊고 풍부하게 빛납니다.'; }
+      else                    { period = '밤';         advice = '하루의 마지막을 향하는 시간, 당신이 살아온 모든 순간은 그 자체로 소중한 이야기입니다.'; }
+
+      document.getElementById('messageBody').innerHTML =
+        `당신은 현재 인생의 <span class="msg-time">${period} ${timeStr}분</span>에 위치해 있습니다.<br><br>` +
+        `세상은 넓고 할 일도 많습니다. ${advice}`;
+
+      document.getElementById('messageSource').textContent =
+        '♧ 컨셉 출처 : 김난도 작가의 저서 『아프니까 청춘이다』';
+    }
+
+    /* ── Analog clock drawing ───────────────────── */
+    function drawClock(totalHours) {
+      const S  = canvas.width;
+      const cx = S / 2, cy = S / 2;
+      const R  = S / 2 - 4;        // outer radius
+      const FR = R - 10;           // face radius
+
+      ctx.clearRect(0, 0, S, S);
+
+      /* Shadow base */
+      ctx.save();
+      ctx.shadowColor   = 'rgba(0,0,0,.55)';
+      ctx.shadowBlur    = 24;
+      ctx.shadowOffsetY = 10;
+      circle(cx, cy, R);
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fill();
+      ctx.restore();
+
+      /* Face */
+      circle(cx, cy, FR);
+      ctx.fillStyle = '#fafaf8';
+      ctx.fill();
+
+      /* Face inner ring */
+      circle(cx, cy, FR);
+      ctx.strokeStyle = 'rgba(0,0,0,.07)';
+      ctx.lineWidth   = 2;
+      ctx.stroke();
+
+      /* Tick marks */
+      for (let i = 0; i < 60; i++) {
+        const a  = tickAngle(i, 60);
+        const isH = i % 5 === 0;
+        const r1 = FR - 2;
+        const r2 = isH ? r1 - 13 : r1 - 6;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+        ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+        ctx.strokeStyle = '#1a1a1a';
+        ctx.lineWidth   = isH ? 2 : 1;
+        ctx.lineCap     = 'round';
+        ctx.stroke();
+      }
+
+      /* Numbers */
+      const numR  = FR - 32;
+      const nSize = Math.max(12, S * 0.072);
+      ctx.font         = `bold ${nSize}px 'Noto Sans KR', sans-serif`;
+      ctx.fillStyle    = '#1a1a1a';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      for (let n = 1; n <= 12; n++) {
+        const a = tickAngle(n, 12);
+        ctx.fillText(n, cx + Math.cos(a) * numR, cy + Math.sin(a) * numR);
+      }
+
+      /* QUARTZ label */
+      ctx.font         = `${Math.max(8, nSize * .48)}px 'Noto Sans KR', sans-serif`;
+      ctx.fillStyle    = '#666';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('QUARTZ', cx, cy + FR * .42);
+
+      /* Placeholder hands */
+      if (totalHours === null) {
+        drawHand(cx, cy, -Math.PI/2, FR * .48, Math.max(3, S*.014), '#ccc');
+        drawHand(cx, cy, -Math.PI/2, FR * .66, Math.max(2, S*.011), '#ccc');
+        centerDot(cx, cy, S, '#bbb');
+        return;
+      }
+
+      /* ── Calculated hands ── */
+      const h12 = totalHours % 12;                     // position on 12h face
+      const mF  = (totalHours % 1) * 60;               // fractional minutes
+
+      const hourAngle = tickAngle(h12, 12);
+      const minAngle  = tickAngle(mF, 60);
+
+      /* Minute hand */
+      drawHand(cx, cy, minAngle,  FR * .68, Math.max(2, S*.011), '#1a1a1a');
+      /* Hour hand */
+      drawHand(cx, cy, hourAngle, FR * .47, Math.max(3, S*.015), '#1a1a1a');
+
+      /* Center dot – gold then dark */
+      centerDot(cx, cy, S, '#f5c518');
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.max(2, S*.009), 0, Math.PI*2);
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fill();
+    }
+
+    /* ── Helpers ─────────────────────────────────── */
+    function circle(x, y, r) {
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+    }
+
+    function tickAngle(n, total) {
+      return (n / total) * Math.PI * 2 - Math.PI / 2;
+    }
+
+    function drawHand(cx, cy, angle, len, width, color) {
+      const back = len * .14;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = width;
+      ctx.lineCap     = 'round';
+      ctx.shadowColor   = 'rgba(0,0,0,.25)';
+      ctx.shadowBlur    = 3;
+      ctx.shadowOffsetY = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - Math.cos(angle)*back, cy - Math.sin(angle)*back);
+      ctx.lineTo(cx + Math.cos(angle)*len,  cy + Math.sin(angle)*len);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function centerDot(cx, cy, S, color) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.max(4, S*.018), 0, Math.PI*2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function formatYear(n) {
+      return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
+    }
+
+    /* ── Event listeners ──────────────────────────── */
+    lifespanInput.addEventListener('input', update);
+    ageInput.addEventListener('input', update);
+    activeToggleInput.addEventListener('change', updateActiveVisibility);
+    window.addEventListener('resize', resizeCanvas);
+
+    /* ── Init ─────────────────────────────────────── */
+    resizeCanvas();   // also calls drawClock(null)
+  </script>
+</body>
+</html>
